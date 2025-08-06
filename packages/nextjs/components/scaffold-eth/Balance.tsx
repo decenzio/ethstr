@@ -32,10 +32,10 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
 
   if (!address || isLoading || balance === null || (isNativeCurrencyPriceFetching && nativeCurrencyPrice === 0)) {
     return (
-      <div className="animate-pulse flex space-x-4">
-        <div className="rounded-md bg-slate-300 h-6 w-6"></div>
-        <div className="flex items-center space-y-6">
-          <div className="h-2 w-28 bg-slate-300 rounded-sm"></div>
+      <div className={`flex items-center justify-center ${className}`}>
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+          <span className="text-lg">Loading...</span>
         </div>
       </div>
     );
@@ -43,8 +43,8 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
 
   if (isError) {
     return (
-      <div className="border-2 border-base-content/30 rounded-md px-2 flex flex-col items-center max-w-fit cursor-pointer">
-        <div className="text-warning">Error</div>
+      <div className={`flex items-center justify-center text-error ${className}`}>
+        <span className="text-lg font-semibold">Error loading balance</span>
       </div>
     );
   }
@@ -52,10 +52,9 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
   const formattedBalance = balance ? Number(formatEther(balance.value)) : 0;
 
   return (
-    <button
-      className={`btn btn-sm btn-ghost flex flex-col font-normal items-center hover:bg-transparent ${className}`}
+    <div
+      className={`flex flex-col font-normal items-center cursor-pointer ${className}`}
       onClick={toggleDisplayUsdMode}
-      type="button"
     >
       <div className="w-full flex items-center justify-center">
         {displayUsdMode ? (
@@ -70,6 +69,6 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
           </>
         )}
       </div>
-    </button>
+    </div>
   );
 };

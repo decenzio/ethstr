@@ -12,19 +12,11 @@ const WalletInteraction = ({ className }: { className?: string }) => {
 
   return (
     <div className={className}>
-      <div className="flex w-full flex-col lg:flex-row items-center justify-center gap-5">
-        <button
-          className="btn btn-soft btn-lg btn-warning flex-1 text-lg tooltip tooltip-bottom"
-          data-tip="Send something somewhere"
-          onClick={() => handleOpenModal("send-modal")}
-        >
+      <div className="flex w-full flex-col lg:flex-row items-center justify-center gap-4">
+        <button className="btn btn-warning flex-1 text-lg font-medium" onClick={() => handleOpenModal("send-modal")}>
           Send
         </button>
-        <button
-          className="btn btn-soft btn-lg btn-accent flex-1 text-lg tooltip tooltip-right"
-          data-tip="Display shareable wallet information"
-          onClick={() => handleOpenModal("receive-modal")}
-        >
+        <button className="btn btn-accent flex-1 text-lg font-medium" onClick={() => handleOpenModal("receive-modal")}>
           Receive
         </button>
       </div>

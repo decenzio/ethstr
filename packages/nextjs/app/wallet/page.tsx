@@ -63,14 +63,14 @@ const Wallet: NextPage = () => {
       <div className="flex items-center flex-col grow pt-10">
         {pubkey ? (
           // Connected State - Wallet Interface
-          <div className="px-5 max-w-4xl mx-auto w-full">
+          <div className="px-5 w-full">
             {/* Wallet Header */}
-            <div className="text-center mb-12">
-              <h1 className="text-center mb-8">
-                <span className="block text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent opacity-0 animate-slideIn">
+            <div className="text-center mb-16">
+              <h1 className="mb-8">
+                <span className="block text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent opacity-0 animate-slideIn">
                   Your ETHSTR Wallet
                 </span>
-                <span className="block text-xl text-base-content/80 font-medium opacity-0 animate-slideIn delay-200">
+                <span className="block text-lg lg:text-xl text-base-content/70 font-medium opacity-0 animate-slideIn delay-200">
                   Nostr-powered EVM transactions
                 </span>
               </h1>
@@ -78,9 +78,7 @@ const Wallet: NextPage = () => {
 
             {/* Wallet Card Section */}
             <div className="flex justify-center mb-12">
-              <div className="w-full max-w-md">
-                <WalletCard className="opacity-0 animate-slideIn delay-300" />
-              </div>
+              <WalletCard className="opacity-0 animate-slideIn delay-300" />
             </div>
 
             {/* Additional Actions */}
