@@ -43,7 +43,7 @@
     "postinstall": "husky",
     "precommit": "lint-staged",
     "start": "yarn workspace @se-2/nextjs dev",
-    "test": "yarn hardhat:test",
+    "test": "cd packages/foundry && forge test -vvv",
     "vercel": "yarn workspace @se-2/nextjs vercel",
     "vercel:yolo": "yarn workspace @se-2/nextjs vercel:yolo",
     "ipfs": "yarn workspace @se-2/nextjs ipfs",
