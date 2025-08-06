@@ -1,88 +1,106 @@
-# 🏗 Scaffold-ETH 2
+# ETHSTR
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+**One Key. Many Worlds.** A revolutionary service that bridges Nostr identity with EVM functionality, allowing users to leverage their existing Nostr keys for EVM transactions without additional setup.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+## Overview
 
-⚙️ Built using NextJS, RainbowKit, Foundry/Hardhat, Wagmi, Viem, and Typescript.
+We sit directly on top of the Nostr identity layer, enabling the key that already signs your notes to sign EVM transactions too. Any browser extension or mobile app that supports Nostr (Alby, Nos2x, etc.) works out of the box - no extra wallet, seed phrase, or plug-in required.
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+## Key Features
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+### 🔑 Deterministic Addresses from any `npub`
 
-## Requirements
+Your Nostr public key (`npub…`) deterministically maps to a checksummed EVM address. It's the same every time, for every chain, and anyone can verify the math. If you have a Nostr account, you already have an Ethereum account—just unlock it with the key you're using today.
 
-Before you begin, you need to install the following tools:
+### 🔒 Powered by Account Abstraction
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+The project is built on ERC-4337 account abstraction, providing:
 
-## Quickstart
+- Smart-wallet features like batched actions, sponsored gas, and social recovery (coming soon)
+- Your Nostr key remains the single source of truth, while the smart account handles the heavy lifting on-chain
 
-To get started with Scaffold-ETH 2, follow the steps below:
+### 🌐 Decentralized Bundler—over Nostr
 
-1. Install the latest version of Scaffold-ETH 2
+We've re-imagined the ERC-4337 bundler as a Nostr relay service. Instead of a single operator, any relay can pick up user operations, bundle them, and push them on-chain—keeping the mempool open, permissionless, and censorship-resistant.
 
-```
-npx create-eth@latest
-```
+### 🔌 Plug-and-Play API
 
-This command will install all the necessary packages and dependencies, so it might take a while.
+Developers can hit our REST/Relay endpoint to fetch `npub` → EVM addresses. No vendor lock-in, no proprietary SDK—just open JSON over familiar Nostr events.
 
-> [!NOTE]
-> You can also initialize your project with one of our extensions to add specific features or starter-kits. Learn more in our [extensions documentation](https://docs.scaffoldeth.io/extensions/).
+## Getting Started
 
-2. Run a local network in the first terminal:
+### Prerequisites
 
-```
-yarn chain
-```
+- Node.js 18+
+- A Nostr-compatible browser extension (Alby, Nos2x, etc.)
+- Basic understanding of Nostr and Ethereum
 
-This command starts a local Ethereum network that runs on your local machine and can be used for testing and development. Learn how to [customize your network configuration](https://docs.scaffoldeth.io/quick-start/environment#1-initialize-a-local-blockchain).
+### Installation
 
-3. On a second terminal, deploy the test contract:
+```bash
+# Clone the repository
+git clone https://github.com/decenzio/ethstr.git
 
-```
-yarn deploy
+# Navigate to the project directory
+cd ethstr
+
+# Install dependencies
+yarn install
+
+# Start the development server
+yarn run dev
 ```
 
-This command deploys a test smart contract to the local network. You can find more information about how to customize your contract and deployment script in our [documentation](https://docs.scaffoldeth.io/quick-start/environment#2-deploy-your-smart-contract).
+### Usage
 
-4. On a third terminal, start your NextJS app:
+1. **Connect your Nostr identity**: Use any Nostr-compatible extension
+2. **Generate your EVM address**: Your `npub` automatically maps to an EVM address
+3. **Start transacting**: Use your existing Nostr key to sign EVM transactions
+
+## Architecture
 
 ```
-yarn start
+Nostr Identity Layer
+        ↓
+Deterministic Address Generation
+        ↓
+ERC-4337 Account Abstraction
+        ↓
+Decentralized Bundler (Nostr Relays)
+        ↓
+Ethereum (or other EVM) Network
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+## API Reference
 
-**What's next**:
+### REST Endpoint
 
-Visit the [What's next section of our docs](https://docs.scaffoldeth.io/quick-start/environment#whats-next) to learn how to:
+```
+GET /api/address/:npub
+```
 
-- Edit your smart contracts
-- Edit your deployment scripts
-- Customize your frontend
-- Edit the app config
-- Writing and running tests
-- [Setting up external services and API keys](https://docs.scaffoldeth.io/deploying/deploy-smart-contracts#configuration-of-third-party-services-for-production-grade-apps)
+Returns the corresponding EVM address for a given Nostr public key.
 
-## Documentation
+### Nostr Events
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn all the technical details and guides of Scaffold-ETH 2.
+The service uses standard Nostr events for communication between relays and bundlers.
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
+## Development
 
-## Contributing to Scaffold-ETH 2
+This project is built with:
 
-We welcome contributions to Scaffold-ETH 2!
+- **Next.js** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **ERC-4337** - Account abstraction
+- **Nostr Protocol** - Identity layer
 
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+## Contributing
+
+We welcome contributions!
+
+## Community
+
+- [Nostr](https://njump.me/nprofile1qqsyk69pchtd6g8yrj40u2a39599mftlymyxwn4tmpw7m4k5cczjhjgu54awh)
+- [Telegram](https://t.me/+4eWtevhEqHg5N2Q0)
+- Twitter: [Coming Soon]
