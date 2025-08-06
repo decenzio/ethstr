@@ -1,0 +1,9 @@
+{
+  "chain": "coredao",
+  "chainId": 1115,
+  "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+  "factoryAddress": "0xA22904796F46f016017E4efad6e891C1106Fb44F",
+  "implementationAddress": "0xdD9bfac71302bC07cb87d6127e240D322b9AC9dA",
+  "deployedAt": "1754507171",
+  "rpcUrl": "https://rpc.test.btcs.network"
+}
