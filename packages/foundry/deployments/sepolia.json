@@ -1,0 +1,8 @@
+{
+  "chain": "sepolia",
+  "factoryAddress": "0x8bfb6fB3C818CFB53Eb4A8d21b8936Ae39079846",
+  "implementationAddress": "0x6a3Abc3f9a8Dc6fEe20499Ce346D94245753691c",
+  "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+  "rpcUrl": "https://sepolia.gateway.tenderly.co",
+  "deployedAt": "2025-08-06T15:22:25Z"
+}
