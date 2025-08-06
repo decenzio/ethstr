@@ -6,8 +6,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
 import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
-import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
+import { WalletToggle } from "~~/components/import";
+import { FaucetButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { connectService } from "~~/services/custom/connectService";
+import { useGlobalState } from "~~/services/store/store";
 
 type HeaderMenuLink = {
   label: string;
@@ -19,6 +23,10 @@ export const menuLinks: HeaderMenuLink[] = [
   {
     label: "Home",
     href: "/",
+  },
+  {
+    label: "Wallet",
+    href: "/wallet",
   },
   {
     label: "Debug Contracts",
@@ -59,11 +67,28 @@ export const HeaderMenuLinks = () => {
 export const Header = () => {
   const { targetNetwork } = useTargetNetwork();
   const isLocalNetwork = targetNetwork.id === hardhat.id;
+  const nPubkey = useGlobalState(state => state.nPubkey);
 
   const burgerMenuRef = useRef<HTMLDetailsElement>(null);
   useOutsideClick(burgerMenuRef, () => {
     burgerMenuRef?.current?.removeAttribute("open");
   });
+
+  const handleConnectClick = async () => {
+    const response = await connectService.connect();
+    if (!response) {
+      const errorDialog = document.getElementById("error-modal") as HTMLDialogElement | null;
+      if (errorDialog) {
+        errorDialog.showModal();
+        const titleElem = errorDialog.querySelector("h3");
+        const descElem = errorDialog.querySelector("p");
+        if (titleElem) titleElem.textContent = "Connection Error";
+        if (descElem)
+          descElem.textContent =
+            "Unable to connect to Nostr extension. Please install Alby, Nos2x, or another Nostr-compatible extension.";
+      }
+    }
+  };
 
   return (
     <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 shrink-0 justify-between z-20 shadow-md shadow-secondary px-0 sm:px-2">
@@ -83,11 +108,11 @@ export const Header = () => {
         </details>
         <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
           <div className="flex relative w-10 h-10">
-            <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
+            <Image alt="ETHSTR logo" className="cursor-pointer" fill src="/logo.svg" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold leading-tight">Scaffold-ETH</span>
-            <span className="text-xs">Ethereum dev stack</span>
+            <span className="font-bold leading-tight">ETHSTR</span>
+            <span className="text-xs">EVM Nostr wallet</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
@@ -95,8 +120,18 @@ export const Header = () => {
         </ul>
       </div>
       <div className="navbar-end grow mr-4">
-        <RainbowKitCustomConnectButton />
-        {isLocalNetwork && <FaucetButton />}
+        <div className="flex items-center gap-2">
+          {nPubkey ? (
+            <WalletToggle />
+          ) : (
+            <button className="btn btn-secondary" onClick={handleConnectClick} title="Connect your Nostr wallet">
+              <ExclamationTriangleIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Connect Nostr</span>
+              <span className="sm:hidden">Connect</span>
+            </button>
+          )}
+          {isLocalNetwork && <FaucetButton />}
+        </div>
       </div>
     </div>
   );
