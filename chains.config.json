@@ -1,0 +1,67 @@
+{
+  "chains": {
+    "sepolia": {
+      "chainId": 11155111,
+      "name": "Sepolia Testnet",
+      "network": "sepolia",
+      "currency": "ETH",
+      "rpcUrl": "https://sepolia.gateway.tenderly.co",
+      "publicClient": "https://sepolia.gateway.tenderly.co",
+      "bundlerUrl": "https://api.pimlico.io/v1/sepolia/rpc?apikey=YOUR_PIMLICO_API_KEY",
+      "contracts": {
+        "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+        "npubAccountFactory": "0x22CD56a1EA5C0D041eFd2A56C199A46518Df7b98",
+        "npubAccountImplementation": "0xe4D8532D2Ee2cc8f542C09C6718b1aAD05f2c6F7"
+      },
+      "testnet": true,
+      "faucets": [
+        "https://sepoliafaucet.com/"
+      ]
+    },
+    "base": {
+      "chainId": 8453,
+      "name": "Base",
+      "network": "base",
+      "currency": "ETH",
+      "rpcUrl": "https://mainnet.base.org",
+      "publicClient": "https://base-mainnet.public.blastapi.io",
+      "bundlerUrl": "https://api.pimlico.io/v1/base/rpc?apikey=YOUR_PIMLICO_API_KEY",
+      "contracts": {
+        "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+        "npubAccountFactory": "0xaCeEF9bf23b41D4898516D2Fdcd7b4BDc22444D7",
+        "npubAccountImplementation": "0xe509d257be40cf8993f4e94e31c38678d73d8a15"
+      },
+      "testnet": false,
+      "faucets": []
+    },
+    "coredao": {
+      "chainId": 1115,
+      "name": "CoreDAO Testnet",
+      "network": "coredao",
+      "currency": "CORE",
+      "rpcUrl": "https://rpc.test.btcs.network",
+      "publicClient": "https://rpc.test.btcs.network",
+      "bundlerUrl": "https://api.pimlico.io/v1/core-testnet/rpc?apikey=YOUR_PIMLICO_API_KEY",
+      "contracts": {
+        "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+        "npubAccountFactory": "0xA22904796F46f016017E4efad6e891C1106Fb44F",
+        "npubAccountImplementation": "0xdD9bfac71302bC07cb87d6127e240D322b9AC9dA"
+      },
+      "testnet": true,
+      "faucets": [
+        "https://scan.test.btcs.network/faucet"
+      ]
+    }
+  },
+  "defaultChain": "sepolia",
+  "supportedChains": [
+    "sepolia",
+    "base",
+    "coredao"
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-08-06T15:22:25Z",
+    "description": "Multi-chain configuration for ethstr project"
+  }
+}

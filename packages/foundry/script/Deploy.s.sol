@@ -8,6 +8,9 @@ import "../src/NpubAccount.sol";
 
 contract DeployScript is Script {
     function run() external {
+        // Get chain info
+        string memory chainName = getChainName(block.chainid);
+
         // Get the entry point address from environment or use default
         address entryPoint = vm.envOr(
             "ENTRY_POINT",
@@ -17,6 +20,8 @@ contract DeployScript is Script {
         console.log("========================================");
         console.log("Deploying Nostr Account Contracts");
         console.log("========================================");
+        console.log("Chain:", chainName);
+        console.log("Chain ID:", block.chainid);
         console.log("Entry Point:", entryPoint);
         console.log("Deployer:", vm.envAddress("DEPLOYER_ADDRESS"));
         console.log("");
@@ -37,38 +42,61 @@ contract DeployScript is Script {
         console.log("========================================");
         console.log("Deployment Completed Successfully!");
         console.log("========================================");
+        console.log("Chain:", chainName);
+        console.log("Chain ID:", block.chainid);
         console.log("NpubAccountFactory:", address(factory));
         console.log("NpubAccount Implementation:", address(implementation));
         console.log("Entry Point:", entryPoint);
         console.log("");
 
         console.log("Next steps:");
-        console.log("1. Verify contracts on block explorer");
-        console.log("2. Update frontend with factory address");
-        console.log("3. Test account creation");
+        console.log("1. Test account creation");
+        console.log("2. Use contracts in your frontend");
         console.log("");
 
-        // Save deployment info to a file
+        // Save deployment info to chain-specific file
         string memory json = string(
             abi.encodePacked(
                 "{\n",
+                '  "chain": "',
+                chainName,
+                '",\n',
+                '  "chainId": ',
+                vm.toString(block.chainid),
+                ",\n",
                 '  "entryPoint": "',
                 vm.toString(entryPoint),
                 '",\n',
-                '  "npubAccountFactory": "',
+                '  "factoryAddress": "',
                 vm.toString(address(factory)),
                 '",\n',
-                '  "npubAccountImplementation": "',
+                '  "implementationAddress": "',
                 vm.toString(address(implementation)),
                 '",\n',
                 '  "deployedAt": "',
-                vm.toString(block.timestamp),
+                getCurrentTimestamp(),
                 '"\n',
                 "}"
             )
         );
 
-        vm.writeFile("./deployments/latest.json", json);
-        console.log("Deployment info saved to: ./deployments/latest.json");
+        string memory filename = string(
+            abi.encodePacked("./deployments/", chainName, ".json")
+        );
+        vm.writeFile(filename, json);
+        console.log("Deployment info saved to:", filename);
+    }
+
+    function getChainName(
+        uint256 chainId
+    ) internal pure returns (string memory) {
+        if (chainId == 11155111) return "sepolia";
+        if (chainId == 8453) return "base";
+        if (chainId == 1116) return "coredao";
+        return "unknown";
+    }
+
+    function getCurrentTimestamp() internal view returns (string memory) {
+        return vm.toString(block.timestamp);
     }
 }

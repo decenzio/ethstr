@@ -1,8 +1,9 @@
 {
   "chain": "sepolia",
-  "factoryAddress": "0x8bfb6fB3C818CFB53Eb4A8d21b8936Ae39079846",
-  "implementationAddress": "0x6a3Abc3f9a8Dc6fEe20499Ce346D94245753691c",
+  "chainId": 11155111,
   "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
-  "rpcUrl": "https://sepolia.gateway.tenderly.co",
-  "deployedAt": "2025-08-06T15:22:25Z"
+  "factoryAddress": "0x22CD56a1EA5C0D041eFd2A56C199A46518Df7b98",
+  "implementationAddress": "0xe4D8532D2Ee2cc8f542C09C6718b1aAD05f2c6F7",
+  "deployedAt": "1754502300",
+  "rpcUrl": "https://sepolia.gateway.tenderly.co"
 }

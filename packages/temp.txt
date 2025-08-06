@@ -1,0 +1,37 @@
+// "coredao": {
+    //   "chainId": 1115,
+    //   "name": "Core DAO Testnet",
+    //   "network": "coredao",
+    //   "currency": "tCORE",
+    //   "rpcUrl": "https://rpc.test.btcs.network",
+    //   "publicClient": "https://rpc.test.btcs.network",
+    //   "bundlerUrl": "https://bundler.coredao.org/rpc",
+    //   "contracts": {
+    //     "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+    //     "npubAccountFactory": null,
+    //     "npubAccountImplementation": null
+    //   },
+    //   "testnet": true,
+    //   "faucets": [
+    //     "https://scan.test.btcs.network/faucet"
+    //   ]
+    // },
+    // "rootstock": {
+    //   "chainId": 31,
+    //   "name": "Rootstock Testnet",
+    //   "network": "rootstock",
+    //   "currency": "tRBTC",
+    //   "rpcUrl": "https://public-node.testnet.rsk.co",
+    //   "publicClient": "https://public-node.testnet.rsk.co",
+    //   "bundlerUrl": "https://api.pimlico.io/v1/rootstock-testnet/rpc?apikey=YOUR_PIMLICO_API_KEY",
+    //   "contracts": {
+    //     "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+    //     "npubAccountFactory": null,
+    //     "npubAccountImplementation": null
+    //   },
+    //   "testnet": true,
+    //   "faucets": [
+    //     "https://faucet.testnet.rsk.co/"
+    //   ]
+    // }
+//   },
