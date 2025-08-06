@@ -1,0 +1,11 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+
+# Gas configuration for CoreDAO testnet
+gas_price = 2000000000 # 2 gwei
+gas_limit = 30000000
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
