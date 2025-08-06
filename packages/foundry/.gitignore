@@ -1,0 +1,48 @@
+# Compiler files
+cache/
+out/
+forge-cache/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+.env.*
+!.env.example
+
+# Dependency directories
+node_modules/
+
+# Coverage reports
+lcov.info
+coverage/
+
+# Debug files
+*.log
+
+# Local development files
+.DS_Store
+*.swp
+*.swo
+
+# Custom build outputs
+artifacts/
+build/
+typechain/
+typechain-types/
+
+# Local deployment files
+deployments/localhost/
+deployments/hardhat/
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
