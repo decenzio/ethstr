@@ -1,39 +1,77 @@
 # ETHSTR
 
-**One Key. Many Worlds.** A revolutionary service that bridges Nostr identity with EVM functionality, allowing users to leverage their existing Nostr keys for EVM transactions without additional setup.
+**One Key. Many Worlds.**
+ETHSTR is a lightweight wallet technology that lets **any existing Nostr identity instantly work across the entire EVM-compatible ecosystem** — without creating new wallets, seed phrases, or installing extra apps.
 
-## Overview
+If you already use Nostr (e.g. with Alby or Nos2x), you can send transactions, interact with DeFi, and use NFTs directly from your existing account. Your Nostr key becomes your blockchain key — same identity, verifiable security, zero extra setup.
 
-We sit directly on top of the Nostr identity layer, enabling the key that already signs your notes to sign EVM transactions too. Any browser extension or mobile app that supports Nostr (Alby, Nos2x, etc.) works out of the box - no extra wallet, seed phrase, or plug-in required.
+---
 
-## Key Features
+## 🚀 Overview
 
-### 🔑 Deterministic Addresses from any `npub`
+ETHSTR removes the barrier between the social layer (Nostr) and the financial layer (EVM-compatible blockchains), making adoption faster, cheaper, and easier.
 
-Your Nostr public key (`npub…`) deterministically maps to a checksummed EVM address. It's the same every time, for every chain, and anyone can verify the math. If you have a Nostr account, you already have an Ethereum account—just unlock it with the key you're using today.
+**Why it matters:**
 
-### 🔒 Powered by Account Abstraction
+* **No onboarding friction** — every Nostr user already has an address on all EVM-compatible chains.
+* **No extra key management** — fewer risks of lost wallets or hacked seed phrases.
+* **Works with tools people already use** — browser extensions and mobile apps that support Nostr work out of the box.
+* **Opens new markets instantly** — millions of Nostr users can now access EVM-based applications in seconds.
 
-The project is built on ERC-4337 account abstraction, providing:
+---
 
-- Smart-wallet features like batched actions, sponsored gas, and social recovery (coming soon)
-- Your Nostr key remains the single source of truth, while the smart account handles the heavy lifting on-chain
+## 🔑 Key Features
 
-### 🌐 Decentralized Bundler—over Nostr
+### Deterministic Addresses from any `npub`
 
-We've re-imagined the ERC-4337 bundler as a Nostr relay service. Instead of a single operator, any relay can pick up user operations, bundle them, and push them on-chain—keeping the mempool open, permissionless, and censorship-resistant.
+* Nostr public key (`npub…`) deterministically maps to a checksummed EVM address.
+* Same result every time, for every chain, verifiable by anyone.
+* Chain-agnostic — works across all EVM-compatible blockchains.
 
-### 🔌 Plug-and-Play API
+If you have a Nostr account, you already have an EVM account — just unlock it with the same private key you use for Nostr events.
 
-Developers can hit our REST/Relay endpoint to fetch `npub` → EVM addresses. No vendor lock-in, no proprietary SDK—just open JSON over familiar Nostr events.
+### Powered by ERC-4337 (Account Abstraction)
 
-## Getting Started
+* Smart wallet features (planned): batched actions, sponsored gas, and social recovery.
+* Your Nostr key stays the **single source of truth**; the smart account manages on-chain execution.
+
+### Decentralized Bundler over Nostr
+
+* We reimagined the ERC-4337 bundler as a **permissionless Nostr relay service**.
+* Any relay can bundle user operations and push them on-chain.
+* Keeps the mempool open, censorship-resistant, and without central control.
+
+### Plug-and-Play API for Developers
+
+* REST/Relay endpoint to fetch `npub → EVM address`.
+* Simple TypeScript snippet for client-side calculation.
+* 100% open — no proprietary SDKs.
+
+---
+
+## 🏗 Architecture
+
+```
+Nostr Identity Layer
+        ↓
+Deterministic Address Generation
+        ↓
+ERC-4337 Account Abstraction
+        ↓
+Decentralized Bundler (Nostr Relays)
+        ↓
+EVM-Compatible Blockchain Network
+```
+
+---
+
+## 📦 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- A Nostr-compatible browser extension (Alby, Nos2x, etc.)
-- Basic understanding of Nostr and Ethereum
+* **Node.js** 18+
+* A Nostr-compatible browser extension (e.g. Alby, Nos2x)
+* Basic understanding of Nostr and EVM-compatible chains
 
 ### Installation
 
@@ -51,56 +89,61 @@ yarn install
 yarn run dev
 ```
 
-### Usage
+---
 
-1. **Connect your Nostr identity**: Use any Nostr-compatible extension
-2. **Generate your EVM address**: Your `npub` automatically maps to an EVM address
-3. **Start transacting**: Use your existing Nostr key to sign EVM transactions
+## 🖥 Usage
 
-## Architecture
+1. **Connect your Nostr identity**
+   Use any Nostr-compatible extension in your browser.
+2. **Generate your EVM address**
+   Your `npub` automatically maps to an EVM-compatible address.
+3. **Start transacting**
+   Use your Nostr key to sign transactions on any EVM-compatible blockchain.
 
-```
-Nostr Identity Layer
-        ↓
-Deterministic Address Generation
-        ↓
-ERC-4337 Account Abstraction
-        ↓
-Decentralized Bundler (Nostr Relays)
-        ↓
-Ethereum (or other EVM) Network
-```
+---
 
-## API Reference
+## 📡 API Reference
 
 ### REST Endpoint
 
 ```
-GET /api/address/:npub
+GET /api/v1/EVMAddress/npub123...
 ```
 
-Returns the corresponding EVM address for a given Nostr public key.
+**Response:**
+
+```json
+{
+    "EVM-address":"0x123..."
+}
+```
 
 ### Nostr Events
 
 The service uses standard Nostr events for communication between relays and bundlers.
 
-## Development
+---
+
+## 🛠 Development
 
 This project is built with:
 
-- **Next.js** - React framework
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **ERC-4337** - Account abstraction
-- **Nostr Protocol** - Identity layer
+* **Next.js** — React framework
+* **TypeScript** — Type safety
+* **Tailwind CSS** — Styling
+* **ERC-4337** — Account abstraction
+* **Nostr Protocol** — Identity layer
 
-## Contributing
+---
 
-We welcome contributions!
+## 🤝 Contributing
 
-## Community
+We welcome contributions! Please fork the repo and submit PRs or write us on hello@decenzio.com
 
-- [Nostr](https://njump.me/nprofile1qqsyk69pchtd6g8yrj40u2a39599mftlymyxwn4tmpw7m4k5cczjhjgu54awh)
-- [Telegram](https://t.me/+4eWtevhEqHg5N2Q0)
-- Twitter: [Coming Soon]
+---
+
+## 🌍 Community
+
+* [Nostr Profile](https://njump.me/nprofile1qqsyk69pchtd6g8yrj40u2a39599mftlymyxwn4tmpw7m4k5cczjhjgu54awh)
+* [Telegram](https://t.me/+4eWtevhEqHg5N2Q0)
+* Twitter: *Coming Soon*
