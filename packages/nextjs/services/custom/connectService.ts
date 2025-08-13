@@ -1,7 +1,4 @@
-import { createSmartAccountClient } from "permissionless";
-import { createPublicClient, http, webSocket } from "viem";
-import { base } from "viem/chains";
-import { toNostrSmartAccount } from "~~/services/custom/evm-account/nostrSmartAccount";
+import { createChainClients } from "~~/services/custom/chainClientService";
 import { nostrService } from "~~/services/custom/nostr/nostrService";
 import { useGlobalState } from "~~/services/store/store";
 import { ConnectService } from "~~/types/custom/connectService";
@@ -16,33 +13,22 @@ export const connectService = {
       return null;
     }
 
-    const publicClient = createPublicClient({
-      chain: base,
-      transport: webSocket("wss://base-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94"),
-    });
+    // Get the currently selected chain from store
+    const selectedChain = useGlobalState.getState().selectedChain;
 
+    // Use the dynamic chain client service to create all clients for the selected chain
+    const { publicClient, smartAccount, bundlerClient, address } = await createChainClients(
+      selectedChain,
+      `0x${pubkey}`,
+    );
+
+    // Update the global state with the created clients
     useGlobalState.getState().setPublicClient(publicClient);
-
-    const evmAccount = await toNostrSmartAccount({
-      client: publicClient,
-      owner: `0x${pubkey}`,
-    });
-
-    useGlobalState.getState().setEvmAccount(evmAccount);
-
-    const bundlerClient = createSmartAccountClient({
-      account: evmAccount,
-      chain: base,
-      bundlerTransport: http(`https://api.pimlico.io/v2/8453/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC`), // Use any bundler url
-    });
-
+    useGlobalState.getState().setEvmAccount(smartAccount);
     useGlobalState.getState().setBundlerClient(bundlerClient);
-
-    const ethPubKey = (await evmAccount.getAddress()).toString();
-
-    useGlobalState.getState().setWalletAddress(ethPubKey);
+    useGlobalState.getState().setWalletAddress(address);
     useGlobalState.getState().setNPubKey(npub);
 
-    return { ethPubkey: ethPubKey, nPubkey: npub };
+    return { ethPubkey: address, nPubkey: npub };
   },
 };

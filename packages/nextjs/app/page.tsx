@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { ArrowRightIcon, CpuChipIcon, GlobeAltIcon, KeyIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { DetailedChainSelector } from "~~/components/custom/ChainSelector";
 import { Address } from "~~/components/scaffold-eth";
 
 const Home: NextPage = () => {
@@ -43,6 +44,13 @@ const Home: NextPage = () => {
               <span className="badge badge-primary badge-lg">Nos2x</span>
               <span className="badge badge-primary badge-lg">And more...</span>
             </div>
+          </div>
+        </div>
+
+        {/* Chain Selection Section */}
+        <div className="w-full px-5 mb-8">
+          <div className="max-w-md mx-auto">
+            <DetailedChainSelector />
           </div>
         </div>
 

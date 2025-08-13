@@ -1,3 +1,4 @@
+import { getChainConfig } from "../../../../../chains.config";
 import { getSenderAddress } from "./getSenderAddress";
 import {
   type Address,
@@ -26,6 +27,7 @@ import {
 import { getChainId } from "viem/actions";
 import { readContract } from "viem/actions";
 import { getAction } from "viem/utils";
+import { useGlobalState } from "~~/services/store/store";
 
 export type GetAccountNonceParams = {
   address: Address;
@@ -145,8 +147,22 @@ export type ToSimpleSmartAccountParameters<entryPointVersion extends EntryPointV
 const getFactoryAddress = (entryPointVersion: EntryPointVersion, factoryAddress?: Address): Address => {
   if (factoryAddress) return factoryAddress;
 
+  try {
+    // Get the currently selected chain from global state
+    const selectedChain = useGlobalState.getState().selectedChain;
+    const chainConfig = getChainConfig(selectedChain);
+
+    // Use the factory address from the chain config
+    if (chainConfig.contracts?.npubAccountFactory) {
+      return chainConfig.contracts.npubAccountFactory as Address;
+    }
+  } catch (error) {
+    console.warn("Failed to get factory address from chain config, using fallback", error);
+  }
+
   switch (entryPointVersion) {
     case "0.8":
+      // Fallback to Base factory address
       return "0xaCeEF9bf23b41D4898516D2Fdcd7b4BDc22444D7";
     default:
       throw new Error("Unsupported entrypoint version");

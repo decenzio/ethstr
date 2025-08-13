@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTargetNetwork } from "./useTargetNetwork";
-import { Address } from "viem";
+import { Address, createPublicClient, http } from "viem";
 import { useGlobalState } from "~~/services/store/store";
+import { useSelectedChain } from "~~/storage/hooks";
 
 export type UseBalanceParameters = {
   address?: Address;
@@ -15,10 +16,11 @@ export type BalanceData = {
 };
 
 /**
- * Custom balance hook that works with our smart account system
+ * Custom balance hook that works with our smart account system and multichain support
  */
 export const useWatchBalance = ({ address }: UseBalanceParameters) => {
   const { targetNetwork } = useTargetNetwork();
+  const [selectedChain] = useSelectedChain();
   const publicClient = useGlobalState(state => state.publicClient);
   const [balance, setBalance] = useState<BalanceData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +37,18 @@ export const useWatchBalance = ({ address }: UseBalanceParameters) => {
         setIsLoading(true);
         setIsError(false);
 
-        const balanceValue = await publicClient.getBalance({ address });
+        // Create a public client for the selected chain if needed
+        let clientToUse = publicClient;
+
+        // If we don't have a public client or it's for a different chain, create one
+        if (!clientToUse || clientToUse.chain?.id !== targetNetwork.id) {
+          clientToUse = createPublicClient({
+            chain: targetNetwork,
+            transport: http(),
+          });
+        }
+
+        const balanceValue = await clientToUse.getBalance({ address });
 
         const balanceData: BalanceData = {
           value: balanceValue,
@@ -60,7 +73,7 @@ export const useWatchBalance = ({ address }: UseBalanceParameters) => {
     const interval = setInterval(fetchBalance, 10000); // Update every 10 seconds
 
     return () => clearInterval(interval);
-  }, [address, publicClient, targetNetwork.nativeCurrency.symbol]);
+  }, [address, publicClient, targetNetwork, selectedChain]);
 
   return {
     data: balance,

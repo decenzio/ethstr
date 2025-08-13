@@ -1,4 +1,32 @@
+import { getChainConfig } from "../../chains.config";
+import { defineChain } from "viem";
 import * as chains from "viem/chains";
+
+// Fetch CoreDAO testnet data from chains.config.json
+const coreDAOConfig = getChainConfig("coredao");
+
+// Define the CoreDAO testnet with data from chain configuration
+const coreDAOTestnet = defineChain({
+  id: coreDAOConfig.chainId,
+  name: coreDAOConfig.name,
+  nativeCurrency: {
+    decimals: 18,
+    name: coreDAOConfig.currency,
+    symbol: `t${coreDAOConfig.currency}`,
+  },
+  rpcUrls: {
+    default: {
+      http: [coreDAOConfig.rpcUrl],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "CoreDAO Testnet Explorer",
+      url: "https://scan.test.btcs.network",
+    },
+  },
+  testnet: coreDAOConfig.testnet,
+});
 
 export type ScaffoldConfig = {
   targetNetworks: readonly chains.Chain[];
@@ -13,7 +41,7 @@ export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.foundry, chains.sepolia, chains.base, chains.coreTestnet2, chains.rootstockTestnet],
+  targetNetworks: [chains.sepolia, chains.base, coreDAOTestnet],
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)
