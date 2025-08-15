@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { Address } from "viem";
-import { hardhat } from "viem/chains";
 import { AddressComponent } from "~~/app/blockexplorer/_components/AddressComponent";
 import deployedContracts from "~~/contracts/deployedContracts";
+import scaffoldConfig from "~~/scaffold.config";
 import { isZeroAddress } from "~~/utils/scaffold-eth/common";
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
@@ -37,9 +37,8 @@ async function fetchByteCodeAndAssembly(buildInfoDirectory: string, contractPath
   return { bytecode, assembly };
 }
 
-const getContractData = async (address: Address) => {
+const getContractData = async (address: Address, chainId: number) => {
   const contracts = deployedContracts as GenericContractsDeclaration | null;
-  const chainId = hardhat.id;
 
   if (!contracts || !contracts[chainId] || Object.keys(contracts[chainId]).length === 0) {
     return null;
@@ -94,7 +93,10 @@ const AddressPage = async (props: PageProps) => {
 
   if (isZeroAddress(address)) return null;
 
-  const contractData: { bytecode: string; assembly: string } | null = await getContractData(address);
+  // For server-side rendering, we'll use the first target network
+  // The client-side components will handle dynamic chain switching
+  const defaultChainId = scaffoldConfig.targetNetworks[0].id;
+  const contractData: { bytecode: string; assembly: string } | null = await getContractData(address, defaultChainId);
   return <AddressComponent address={address} contractData={contractData} />;
 };
 

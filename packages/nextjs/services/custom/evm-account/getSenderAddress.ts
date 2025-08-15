@@ -91,29 +91,45 @@ export class InvalidEntryPointError extends BaseError {
  * // Return '0x7a88a206ba40b37a8c07a2b5688cf8b287318b63'
  */
 export const getSenderAddress = async (client: Client, args: Prettify<GetSenderAddressParams>): Promise<Address> => {
-  const { initCode, entryPointAddress, factory, factoryData } = args;
+  try {
+    const { initCode, entryPointAddress, factory, factoryData } = args;
 
-  if (!initCode && !factory && !factoryData) {
-    throw new Error("Either `initCode` or `factory` and `factoryData` must be provided");
+    if (!initCode && !factory && !factoryData) {
+      throw new Error("Either `initCode` or `factory` and `factoryData` must be provided");
+    }
+
+    const formattedInitCode = initCode || concat([factory as Hex, factoryData as Hex]);
+
+    // Add timeout specifically for the network call
+    const networkCallPromise = getAction(
+      client,
+      call,
+      "call",
+    )({
+      data: encodeDeployData({
+        abi: GetSenderAddressHelperAbi,
+        bytecode: GetSenderAddressHelperByteCode,
+        args: [entryPointAddress, formattedInitCode],
+      }),
+    });
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Network call timeout after 15 seconds")), 15000);
+    });
+
+    const { data } = (await Promise.race([networkCallPromise, timeoutPromise])) as any;
+
+    if (!data) {
+      throw new Error("Failed to get sender address");
+    }
+
+    const address = decodeAbiParameters([{ type: "address" }], data)[0];
+
+    return address;
+  } catch (error) {
+    console.error("❌ [getSenderAddress] Failed:", error);
+    console.error("❌ [getSenderAddress] Error details:", (error as Error)?.message);
+    console.error("❌ [getSenderAddress] Error stack:", (error as Error)?.stack);
+    throw error;
   }
-
-  const formattedInitCode = initCode || concat([factory as Hex, factoryData as Hex]);
-
-  const { data } = await getAction(
-    client,
-    call,
-    "call",
-  )({
-    data: encodeDeployData({
-      abi: GetSenderAddressHelperAbi,
-      bytecode: GetSenderAddressHelperByteCode,
-      args: [entryPointAddress, formattedInitCode],
-    }),
-  });
-
-  if (!data) {
-    throw new Error("Failed to get sender address");
-  }
-
-  return decodeAbiParameters([{ type: "address" }], data)[0];
 };

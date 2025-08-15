@@ -4,13 +4,6 @@ import { createPublicClient as createViemPublicClient, http, webSocket } from "v
 import scaffoldConfig from "~~/scaffold.config";
 import { toNostrSmartAccount } from "~~/services/custom/evm-account/nostrSmartAccount";
 
-// WebSocket configurations (fallback for chains that support it)
-const CHAIN_WS_CONFIG: Partial<Record<SupportedChain, string>> = {
-  sepolia: "wss://sepolia.drpc.org",
-  base: "wss://base-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94",
-  // coredao and rootstock don't have WebSocket support in current config
-};
-
 /**
  * Creates a public client for the specified chain
  */
@@ -22,9 +15,12 @@ export function createChainPublicClient(chainName: SupportedChain) {
     throw new Error(`Chain ${chainName} not found in scaffold config`);
   }
 
-  // Use WebSocket if available, otherwise fallback to HTTP
-  const wsUrl = CHAIN_WS_CONFIG[chainName];
-  const transport = wsUrl ? webSocket(wsUrl) : http(chainConfig.rpcUrl);
+  let transport;
+  try {
+    transport = webSocket(chainConfig.wsRpcUrl);
+  } catch {
+    transport = http(chainConfig.rpcUrl);
+  }
 
   return createViemPublicClient({
     chain: scaffoldChain,
@@ -32,16 +28,14 @@ export function createChainPublicClient(chainName: SupportedChain) {
   });
 }
 
-/**
- * Creates a smart account for the specified chain and owner
- */
 export async function createChainSmartAccount(chainName: SupportedChain, owner: `0x${string}`) {
   const publicClient = createChainPublicClient(chainName);
-
-  return await toNostrSmartAccount({
+  const account = await toNostrSmartAccount({
     client: publicClient,
     owner,
   });
+
+  return account;
 }
 
 /**
@@ -62,18 +56,16 @@ export function createChainBundlerClient(chainName: SupportedChain, smartAccount
   });
 }
 
-/**
- * Creates all necessary clients for a specific chain
- */
 export async function createChainClients(chainName: SupportedChain, owner: `0x${string}`) {
   const publicClient = createChainPublicClient(chainName);
   const smartAccount = await createChainSmartAccount(chainName, owner);
+  const address = await smartAccount.getAddress();
   const bundlerClient = createChainBundlerClient(chainName, smartAccount);
 
   return {
     publicClient,
     smartAccount,
     bundlerClient,
-    address: await smartAccount.getAddress(),
+    address,
   };
 }

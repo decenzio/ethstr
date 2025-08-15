@@ -6,7 +6,8 @@
       "network": "sepolia",
       "currency": "ETH",
       "rpcUrl": "https://rpc.sepolia.org",
-      "bundlerUrl": "https://api.pimlico.io/v2/sepolia/rpc?apikey={apiKey}",
+      "wsRpcUrl": "wss://ethereum-sepolia-rpc.publicnode.com",
+      "bundlerUrl": "https://api.pimlico.io/v2/sepolia/rpc?apikey=${apiKey}",
       "contracts": {
         "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
         "npubAccountFactory": "0x22CD56a1EA5C0D041eFd2A56C199A46518Df7b98",
@@ -23,7 +24,8 @@
       "network": "base",
       "currency": "ETH",
       "rpcUrl": "https://mainnet.base.org",
-      "bundlerUrl": "https://api.pimlico.io/v2/8453/rpc?apikey={apiKey}",
+      "wsRpcUrl": "wss://base-rpc.publicnode.com",
+      "bundlerUrl": "https://api.pimlico.io/v2/8453/rpc?apikey=${apiKey}",
       "contracts": {
         "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
         "npubAccountFactory": "0xaCeEF9bf23b41D4898516D2Fdcd7b4BDc22444D7",
@@ -38,6 +40,7 @@
       "network": "coredao",
       "currency": "CORE",
       "rpcUrl": "https://rpc.test.btcs.network",
+      "wsRpcUrl": "wss://rpc.test2.btcs.network/wsp",
       "bundlerUrl": "https://api.pimlico.io/v2/core-testnet/rpc?apikey=${apiKey}",
       "contracts": {
         "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",

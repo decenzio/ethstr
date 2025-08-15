@@ -38,15 +38,36 @@ const Wallet: NextPage = () => {
   }, [nPubkey]);
 
   const handleConnectButton = async () => {
-    const response = await connectService.connect();
-    if (!response) {
+    try {
+      console.log("🔄 [Wallet] Connect button clicked");
+      const response = await connectService.connect();
+      console.log("🔍 [Wallet] Connect response:", response);
+
+      if (!response) {
+        console.error("❌ [Wallet] No response from connect service");
+        const errorDialog = document.getElementById("error-modal") as HTMLDialogElement | null;
+        if (errorDialog) {
+          errorDialog.showModal();
+          const titleElem = errorDialog.querySelector("h3");
+          const descElem = errorDialog.querySelector("p");
+          if (titleElem) titleElem.textContent = "Connection Error";
+          if (descElem) descElem.textContent = "Unable to connect to Nostr extension.";
+        }
+      } else {
+        console.log("✅ [Wallet] Connection successful:", response);
+      }
+    } catch (error) {
+      console.error("❌ [Wallet] Connect button error:", error);
+      console.error("❌ [Wallet] Error details:", (error as Error)?.message);
+      console.error("❌ [Wallet] Error stack:", (error as Error)?.stack);
+
       const errorDialog = document.getElementById("error-modal") as HTMLDialogElement | null;
       if (errorDialog) {
         errorDialog.showModal();
         const titleElem = errorDialog.querySelector("h3");
         const descElem = errorDialog.querySelector("p");
-        if (titleElem) titleElem.textContent = "Connection Error";
-        if (descElem) descElem.textContent = "Unable to connect to Nostr extension.";
+        if (titleElem) titleElem.textContent = "Connection Failed";
+        if (descElem) descElem.textContent = `Error: ${(error as Error)?.message || "Unknown error occurred"}`;
       }
     }
   };

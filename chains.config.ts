@@ -5,6 +5,7 @@ export interface ChainConfig {
   network: string;
   currency: string;
   rpcUrl: string;
+  wsRpcUrl: string;
   bundlerUrl: string;
   contracts: {
     entryPoint: string;
