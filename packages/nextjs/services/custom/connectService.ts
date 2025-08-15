@@ -1,48 +1,67 @@
-import { createSmartAccountClient } from "permissionless";
-import { createPublicClient, http, webSocket } from "viem";
-import { base } from "viem/chains";
-import { toNostrSmartAccount } from "~~/services/custom/evm-account/nostrSmartAccount";
+import { createChainClients } from "~~/services/custom/chainClientService";
 import { nostrService } from "~~/services/custom/nostr/nostrService";
 import { useGlobalState } from "~~/services/store/store";
 import { ConnectService } from "~~/types/custom/connectService";
 
 export const connectService = {
   async connect(): Promise<ConnectService | null> {
+    try {
+      console.log("🔄 [ConnectService] Starting connection process...");
+
+      // Reduce timeout to 20 seconds since we have more granular timeouts now
+      const connectionPromise = this._performConnection();
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Connection timeout after 20 seconds")), 20000);
+      });
+
+      return (await Promise.race([connectionPromise, timeoutPromise])) as ConnectService | null;
+    } catch (error) {
+      console.error("❌ [ConnectService] Connection failed:", error);
+      console.error("❌ [ConnectService] Error stack:", (error as Error)?.stack);
+
+      // If it's a timeout error, provide more helpful message
+      if ((error as Error)?.message?.includes("timeout")) {
+        throw new Error(
+          "Connection timed out. This might be due to slow RPC endpoints. Please try again or switch to a different network.",
+        );
+      }
+
+      throw error;
+    }
+  },
+
+  async _performConnection(): Promise<ConnectService | null> {
     await nostrService.connect();
+
+    // Step 2: Get pubkey and npub
+    console.log("🔄 [ConnectService] Getting pubkey and npub...");
     const pubkey: string | null = nostrService.getPubkey();
     const npub: string | null = nostrService.getNostrNpub();
 
+    console.log("🔍 [ConnectService] Pubkey:", pubkey);
+    console.log("🔍 [ConnectService] NPub:", npub);
+
     if (!npub || !pubkey) {
+      console.error("❌ [ConnectService] Missing pubkey or npub");
       return null;
     }
 
-    const publicClient = createPublicClient({
-      chain: base,
-      transport: webSocket("wss://base-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94"),
-    });
+    const selectedChain = useGlobalState.getState().selectedChain;
+    console.log("🔍 [ConnectService] Selected chain:", selectedChain);
+    const { publicClient, smartAccount, bundlerClient, address } = await createChainClients(
+      selectedChain,
+      `0x${pubkey}`,
+    );
+
+    console.log("✅ [ConnectService] Clients created successfully");
+    console.log("🔍 [ConnectService] Wallet address:", address);
 
     useGlobalState.getState().setPublicClient(publicClient);
-
-    const evmAccount = await toNostrSmartAccount({
-      client: publicClient,
-      owner: `0x${pubkey}`,
-    });
-
-    useGlobalState.getState().setEvmAccount(evmAccount);
-
-    const bundlerClient = createSmartAccountClient({
-      account: evmAccount,
-      chain: base,
-      bundlerTransport: http(`https://api.pimlico.io/v2/8453/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC`), // Use any bundler url
-    });
-
+    useGlobalState.getState().setEvmAccount(smartAccount);
     useGlobalState.getState().setBundlerClient(bundlerClient);
-
-    const ethPubKey = (await evmAccount.getAddress()).toString();
-
-    useGlobalState.getState().setWalletAddress(ethPubKey);
+    useGlobalState.getState().setWalletAddress(address);
     useGlobalState.getState().setNPubKey(npub);
 
-    return { ethPubkey: ethPubKey, nPubkey: npub };
+    return { ethPubkey: address, nPubkey: npub };
   },
 };

@@ -5,7 +5,7 @@ export interface ChainConfig {
   network: string;
   currency: string;
   rpcUrl: string;
-  publicClient: string;
+  wsRpcUrl: string;
   bundlerUrl: string;
   contracts: {
     entryPoint: string;
@@ -60,10 +60,6 @@ export function getContractAddress(
 
 export function getRpcUrl(chainName: SupportedChain): string {
   return getChainConfig(chainName).rpcUrl;
-}
-
-export function getPublicClientUrl(chainName: SupportedChain): string {
-  return getChainConfig(chainName).publicClient;
 }
 
 export function getBundlerUrl(chainName: SupportedChain): string {

@@ -3,15 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Hash, Transaction, TransactionReceipt, formatEther, formatUnits } from "viem";
-import { hardhat } from "viem/chains";
-import { usePublicClient } from "wagmi";
 import { Address } from "~~/components/scaffold-eth";
+import { useChainPublicClient } from "~~/hooks/scaffold-eth/useChainPublicClient";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { decodeTransactionData, getFunctionDetails } from "~~/utils/scaffold-eth";
 import { replacer } from "~~/utils/scaffold-eth/common";
 
 const TransactionComp = ({ txHash }: { txHash: Hash }) => {
-  const client = usePublicClient({ chainId: hardhat.id });
+  const publicClient = useChainPublicClient();
   const router = useRouter();
   const [transaction, setTransaction] = useState<Transaction>();
   const [receipt, setReceipt] = useState<TransactionReceipt>();
@@ -20,10 +19,10 @@ const TransactionComp = ({ txHash }: { txHash: Hash }) => {
   const { targetNetwork } = useTargetNetwork();
 
   useEffect(() => {
-    if (txHash && client) {
+    if (txHash && publicClient) {
       const fetchTransaction = async () => {
-        const tx = await client.getTransaction({ hash: txHash });
-        const receipt = await client.getTransactionReceipt({ hash: txHash });
+        const tx = await publicClient.getTransaction({ hash: txHash });
+        const receipt = await publicClient.getTransactionReceipt({ hash: txHash });
 
         const transactionWithDecodedData = decodeTransactionData(tx);
         setTransaction(transactionWithDecodedData);
@@ -35,7 +34,7 @@ const TransactionComp = ({ txHash }: { txHash: Hash }) => {
 
       fetchTransaction();
     }
-  }, [client, txHash]);
+  }, [publicClient, txHash]);
 
   return (
     <div className="container mx-auto mt-10 mb-20 px-10 md:px-0">

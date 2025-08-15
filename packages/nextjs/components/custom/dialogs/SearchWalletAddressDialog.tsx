@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
+import { getChainConfig } from "../../../../../chains.config";
 import { createPublicClient, http } from "viem";
-import { base } from "viem/chains";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { CopyButton } from "~~/components/import";
 import { toNostrSmartAccount } from "~~/services/custom/evm-account/nostrSmartAccount";
@@ -15,13 +15,28 @@ const SearchWalletAddressDialog = ({ className, id }: { className?: string; id: 
   const [showShimmer, setShowShimmer] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   let publicClient = useGlobalState((state: any) => state.publicClient);
+  const selectedChain = useGlobalState((state: any) => state.selectedChain);
 
   const onSearch = async () => {
     if (!publicClient) {
+      // Get current chain configuration from store
+      const currentChainConfig = getChainConfig(selectedChain);
+
       publicClient = createPublicClient({
-        chain: base,
-        transport: http("https://base-mainnet.public.blastapi.io"),
+        chain: {
+          id: currentChainConfig.chainId,
+          name: currentChainConfig.name,
+          rpcUrls: { default: { http: [currentChainConfig.rpcUrl] } },
+          nativeCurrency: {
+            decimals: 18,
+            name: currentChainConfig.currency,
+            symbol: currentChainConfig.currency,
+          },
+        },
+        transport: http(currentChainConfig.rpcUrl),
       });
+
+      console.log(`🔗 Using chain: ${selectedChain} (${currentChainConfig.name}) - RPC: ${currentChainConfig.rpcUrl}`);
     }
 
     if (!inputValue) {
@@ -71,7 +86,7 @@ const SearchWalletAddressDialog = ({ className, id }: { className?: string; id: 
           </label>
           {errorMessage && <div className="text-error text-sm w-full text-left">{errorMessage}</div>}
           {resolvedAddress && (
-            <div className="card w-full relative overflow-hidden bg-accent-content shadow-xl text-white w-110 transition-transform duration-300 ease-out">
+            <div className="card w-full relative overflow-hidden bg-accent-content shadow-xl text-white transition-transform duration-300 ease-out">
               {showShimmer && <div className="shimmer-overlay"></div>}
               <button
                 type="button"

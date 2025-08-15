@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
 import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
+import { CompactChainSelector } from "~~/components/custom/ChainSelector";
 import { WalletToggle } from "~~/components/import";
 import { FaucetButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
@@ -121,6 +122,7 @@ export const Header = () => {
       </div>
       <div className="navbar-end grow mr-4">
         <div className="flex items-center gap-2">
+          <CompactChainSelector className="w-36" />
           {nPubkey ? (
             <WalletToggle />
           ) : (

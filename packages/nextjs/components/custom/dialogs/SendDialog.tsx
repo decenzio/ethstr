@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { PaperAirplaneIcon } from "@heroicons/react/16/solid";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { transactionService } from "~~/services/custom/transactionService";
+import { useGlobalState } from "~~/services/store/store";
 
 const SendDialog = ({ className, id }: { className?: string; id: string }) => {
   const [walletAddress, setWalletAddress] = useState("");
@@ -11,6 +12,26 @@ const SendDialog = ({ className, id }: { className?: string; id: string }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successHash, setSuccessHash] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const selectedChain = useGlobalState(state => state.selectedChain);
+
+  const getExplorerUrl = (txHash: string) => {
+    try {
+      // const chainConfig = getChainConfig(selectedChain);
+
+      // Map chain names to explorer URLs
+      const explorerUrls: Record<string, string> = {
+        sepolia: "https://sepolia.etherscan.io/tx/",
+        base: "https://basescan.org/tx/",
+        coredao: "https://scan.test.btcs.network/tx/",
+      };
+
+      const baseUrl = explorerUrls[selectedChain] || "https://etherscan.io/tx/";
+      return `${baseUrl}${txHash}`;
+    } catch (error) {
+      console.warn("Failed to get explorer URL, using fallback", error);
+      return `https://etherscan.io/tx/${txHash}`;
+    }
+  };
 
   const handleSend = async () => {
     setErrorMessage("");
@@ -71,10 +92,10 @@ const SendDialog = ({ className, id }: { className?: string; id: string }) => {
                 <p className="text-green-500 text-sm mt-1 break-all">
                   Transaction sent!
                   <a
-                    href={`https://basescan.org/tx/${successHash}`}
+                    href={getExplorerUrl(successHash)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-green-400 underline mt-1 ml-2 underline hover:no-underline flex-inline items-center"
+                    className="text-green-400 underline mt-1 ml-2 hover:no-underline flex-inline items-center"
                   >
                     <span>Open in explorer.</span>{" "}
                     <ArrowTopRightOnSquareIcon className="inline h-4 w-4 ml-1 relative -top-[2px]" />

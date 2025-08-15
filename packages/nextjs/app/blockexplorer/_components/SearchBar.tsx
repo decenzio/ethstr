@@ -3,20 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { isAddress, isHex } from "viem";
-import { hardhat } from "viem/chains";
-import { usePublicClient } from "wagmi";
+import { useGlobalState } from "~~/services/store/store";
 
 export const SearchBar = () => {
   const [searchInput, setSearchInput] = useState("");
   const router = useRouter();
 
-  const client = usePublicClient({ chainId: hardhat.id });
+  // Use the dynamic public client from global state instead of hardcoded chain
+  const publicClient = useGlobalState(state => state.publicClient);
 
   const handleSearch = async (event: React.FormEvent) => {
     event.preventDefault();
     if (isHex(searchInput)) {
       try {
-        const tx = await client?.getTransaction({ hash: searchInput });
+        const tx = await publicClient?.getTransaction({ hash: searchInput });
         if (tx) {
           router.push(`/blockexplorer/transaction/${searchInput}`);
           return;
