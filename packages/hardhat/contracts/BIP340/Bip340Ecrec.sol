@@ -12,7 +12,7 @@ import "./Secp256k1.sol";
  *      including challenge computation, point lifting, and coordinate conversions.
  * @author Based on https://hackmd.io/@nZ-twauPRISEa6G9zg3XRw/SyjJzSLt9
  */
-library Bip340Util {
+library BIP340Util {
     // ============ Constants ============
     
     /// @notice Precomputed SHA256 hash of "BIP0340/challenge" tag
@@ -129,7 +129,7 @@ library Bip340Util {
  *      Based on: https://hackmd.io/@nZ-twauPRISEa6G9zg3XRw/SyjJzSLt9
  * @author Optimized implementation for gas efficiency
  */
-library Bip340Ecrec {
+library BIP340Ecrec {
     // ============ Errors ============
     
     /// @notice Thrown when signature parameters are out of valid range
