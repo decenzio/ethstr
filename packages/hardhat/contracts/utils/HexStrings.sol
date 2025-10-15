@@ -9,9 +9,6 @@ pragma solidity ^0.8.28;
 library HexStrings {
     /// @dev Hexadecimal symbols for conversion
     bytes16 private constant _SYMBOLS = "0123456789abcdef";
-    
-    /// @dev Error thrown when input value is invalid
-    error InvalidValue();
 
     /**
      * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.
