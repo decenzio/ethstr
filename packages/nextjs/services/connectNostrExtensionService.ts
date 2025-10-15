@@ -35,8 +35,12 @@ type NIP07 = {
   getPublicKey: () => Promise<string>;
   signEvent: (event: NostrUnsignedEvent) => Promise<NostrEvent>;
   // Optional
+  enable?: () => Promise<void>;
+  getVersion?: () => Promise<string>;
   getRelays?: () => Promise<Record<string, { read: boolean; write: boolean }>>;
   nip04?: NostrNIP04;
+  // Non-standard but supported by some wallets (e.g., nos2x)
+  signSchnorr?: (hex32: string) => Promise<string>;
   // Some wallets expose additional namespaces (nip44, nip07.getInfo, etc.)
   // We leave them as `any` to avoid forcing dependencies.
   [key: string]: any;
@@ -84,14 +88,19 @@ class NostrExtensionService {
    * Throws with a helpful message if not available or user rejects.
    */
   async connect(options?: { timeoutMs?: number }): Promise<NostrSession> {
-    const ok = await this.waitForAvailability(options?.timeoutMs ?? 2500);
-    if (!ok) {
+    const isAvailable = await this.waitForAvailability(options?.timeoutMs ?? 2500);
+    if (!isAvailable) {
       throw new Error(
         "No Nostr extension (NIP-07) detected. Install/enable a wallet like Alby or nos2x, then refresh.",
       );
     }
 
     try {
+      // Some extensions require calling enable() before first use
+      if (typeof window.nostr!.enable === "function") {
+        await window.nostr!.enable();
+      }
+
       const pubkey = await window.nostr!.getPublicKey();
       let relays: NostrSession["relays"];
       try {
@@ -160,6 +169,28 @@ class NostrExtensionService {
     return signed;
   }
 
+  /** Get current pubkey; connects first time if needed. */
+  async getPublicKey(): Promise<string> {
+    const s = await this.ensureSession();
+    return s.pubkey;
+  }
+
+  /**
+   * Optional: sign a raw 32-byte hex digest using Schnorr, if the wallet supports it.
+   * Input must be exactly 64 hex characters (no 0x prefix).
+   */
+  async signSchnorrHex32(hex32: string): Promise<string> {
+    await this.ensureSession();
+    const provider = window.nostr;
+    if (!/^[0-9a-fA-F]{64}$/.test(hex32)) {
+      throw new Error("hex32 must be 64 hex characters (no 0x prefix)");
+    }
+    if (!provider?.signSchnorr) {
+      throw new Error("signSchnorr is not supported by this extension.");
+    }
+    return provider.signSchnorr(hex32);
+  }
+
   /**
    * Optional: NIP-04 encrypt/decrypt if the extension supports it.
    */
@@ -190,6 +221,9 @@ class NostrExtensionService {
     const payload = [0, unsigned.pubkey, unsigned.created_at, unsigned.kind, unsigned.tags, unsigned.content];
     const json = JSON.stringify(payload);
     const enc = new TextEncoder().encode(json);
+    if (typeof crypto === "undefined" || typeof crypto.subtle === "undefined") {
+      throw new Error("Web Crypto API (crypto.subtle) is not available in this environment.");
+    }
     const hashBuf = await crypto.subtle.digest("SHA-256", enc);
     return this.bytesToHex(new Uint8Array(hashBuf));
   }
@@ -200,6 +234,11 @@ class NostrExtensionService {
     let out = "";
     for (let i = 0; i < bytes.length; i++) out += bytes[i].toString(16).padStart(2, "0");
     return out;
+  }
+
+  /** Clear in-memory session (e.g., on sign-out). */
+  clearSession(): void {
+    this._session = null;
   }
 }
 
@@ -218,4 +257,34 @@ export function useNip07Ready(): boolean {
   // In case you want a more reactive hook, you can enhance this to listen for
   // extension-injection events if your target wallet emits any.
   return typeof window.nostr !== "undefined";
+}
+
+/**
+ * Subscribe to provider availability. The callback is invoked once when `window.nostr` appears.
+ * Returns an unsubscribe function.
+ */
+export function onNip07Available(callback: (provider: NIP07) => void, pollMs = 50): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  if (typeof window.nostr !== "undefined") {
+    callback(window.nostr);
+    return () => undefined;
+  }
+  const int = setInterval(() => {
+    if (typeof window.nostr !== "undefined") {
+      clearInterval(int);
+      callback(window.nostr);
+    }
+  }, pollMs);
+  return () => clearInterval(int);
+}
+
+/** Return the current pubkey if connected, otherwise null. */
+export async function getNip07PublicKey(): Promise<string | null> {
+  const s = nostr.session;
+  return s?.pubkey ?? null;
+}
+
+/** Clear the in-memory Nostr session (e.g., on app sign-out). */
+export function clearNip07Session(): void {
+  nostr.clearSession();
 }
