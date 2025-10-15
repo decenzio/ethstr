@@ -62,7 +62,7 @@ library NostrSignatures {
         uint256 owner,
         bytes memory signature,
         bytes32 userOpHash
-    ) internal pure returns (bool success) {
+    ) internal returns (bool success) {
         // Validate input parameters
         if (signature.length != SIGNATURE_LENGTH) {
             revert InvalidSignatureLength();
@@ -98,6 +98,7 @@ library NostrSignatures {
         uint256 signatureS;
         assembly ("memory-safe") {
             // Load R (first 32 bytes of signature)
+            // signature.length is already validated to be 64 bytes
             signatureR := mload(add(signature, 0x20))
             // Load s (second 32 bytes of signature)
             signatureS := mload(add(signature, 0x40))
@@ -110,6 +111,9 @@ library NostrSignatures {
         if (!success) {
             revert SignatureVerificationFailed();
         }
+        
+        // Emit event for successful verification
+        emit NostrSignatureVerified(owner, userOpHash);
     }
 
     // ============ Private Helper Functions ============
@@ -145,5 +149,60 @@ library NostrSignatures {
         }
         
         return string(buffer);
+    }
+
+    /**
+     * @notice Verifies a Nostr signature against a user operation hash (non-reverting version)
+     * @dev Same as verifyNostrSignature but returns false instead of reverting on failure
+     * @param owner The Nostr public key (x-coordinate) that should have signed the message
+     * @param signature The 64-byte BIP340 signature (32 bytes R + 32 bytes s)
+     * @param userOpHash The hash of the user operation being verified
+     * @return success True if the signature is valid, false otherwise
+     */
+    function tryVerifyNostrSignature(
+        uint256 owner,
+        bytes memory signature,
+        bytes32 userOpHash
+    ) internal returns (bool success) {
+        // Validate input parameters
+        if (signature.length != SIGNATURE_LENGTH || owner == 0) {
+            return false;
+        }
+
+        // Construct the Nostr event message in the required JSON-like format
+        bytes memory nostrEventMessage = abi.encodePacked(
+            '[',
+            _uintToString(NOSTR_CREATED_AT),
+            ',"',
+            HexStrings.toHexString(owner),
+            '",',
+            _uintToString(NOSTR_CREATED_AT),
+            ',',
+            _uintToString(NOSTR_AUTH_KIND),
+            ',',
+            NOSTR_TAGS,
+            ',"',
+            HexStrings.toHexString(uint256(userOpHash)),
+            '"]'
+        );
+
+        // Hash the constructed message using SHA256
+        bytes32 messageHash = sha256(nostrEventMessage);
+
+        // Extract signature components using assembly for gas efficiency
+        uint256 signatureR;
+        uint256 signatureS;
+        assembly ("memory-safe") {
+            signatureR := mload(add(signature, 0x20))
+            signatureS := mload(add(signature, 0x40))
+        }
+
+        // Verify the BIP340 signature
+        success = BIP340Ecrec.verify(owner, signatureR, signatureS, messageHash);
+        
+        // Emit event for successful verification
+        if (success) {
+            emit NostrSignatureVerified(owner, userOpHash);
+        }
     }
 }
