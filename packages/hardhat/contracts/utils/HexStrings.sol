@@ -17,37 +17,38 @@ library HexStrings {
      * @notice Always returns a string with leading zeros if value is less than 2^256-1
      */
     function toHexString(uint256 value) internal pure returns (string memory) {
-        // Use assembly for gas optimization
+        // Use assembly for maximum gas optimization
         assembly {
-            // Allocate memory for 64 characters + 32 bytes for string length
+            // Allocate memory: 32 bytes (length) + 64 bytes (data) = 96 bytes total
             let ptr := mload(0x40)
-            mstore(0x40, add(ptr, 0x60)) // 64 + 32 = 96 bytes
+            mstore(0x40, add(ptr, 0x60)) // Update free memory pointer
             
-            // Store string length (64)
+            // Store string length (64 characters)
             mstore(ptr, 0x40)
             
-            // Move to data section
+            // Calculate data pointer (skip 32-byte length field)
             let dataPtr := add(ptr, 0x20)
             
-            // Process 64 nibbles (4 bits each)
+            // Process all 64 nibbles (4 bits each) from right to left
             for { let i := 0x40 } gt(i, 0) { i := sub(i, 1) } {
-                // Extract lowest 4 bits
+                // Extract the lowest 4 bits (nibble)
                 let nibble := and(value, 0xf)
                 
-                // Convert to ASCII character
-                let char := add(0x30, nibble) // '0' = 0x30
+                // Convert nibble to ASCII character
+                let char := add(0x30, nibble) // Start with '0' (0x30)
                 if gt(nibble, 9) {
-                    char := add(0x57, nibble) // 'a' = 0x61, so 0x61 - 0xa = 0x57
+                    // For values 10-15, convert to 'a'-'f' (0x61-0x66)
+                    char := add(0x57, nibble) // 0x61 - 0xa = 0x57
                 }
                 
-                // Store character (little-endian, so we write from end)
+                // Store character at correct position (right-to-left)
                 mstore8(add(dataPtr, sub(i, 1)), char)
                 
-                // Shift right by 4 bits
+                // Shift value right by 4 bits for next nibble
                 value := shr(4, value)
             }
             
-            // Return the string
+            // Return the complete string (ptr + length)
             return(ptr, 0x60)
         }
     }
@@ -59,6 +60,7 @@ library HexStrings {
      * @notice More gas-efficient for smaller numbers as it doesn't include leading zeros
      */
     function toHexStringNoPrefix(uint256 value) internal pure returns (string memory) {
+        // Handle zero case efficiently
         if (value == 0) {
             return "0";
         }
@@ -67,17 +69,22 @@ library HexStrings {
         uint256 length = 0;
         uint256 temp = value;
         while (temp != 0) {
-            length++;
-            temp >>= 4;
+            unchecked {
+                length++;
+                temp >>= 4;
+            }
         }
         
-        // Allocate memory
+        // Allocate memory for the result
         bytes memory buffer = new bytes(length);
         
-        // Convert to hex
-        for (uint256 i = length; i > 0; --i) {
-            buffer[i - 1] = _SYMBOLS[value & 0xf];
-            value >>= 4;
+        // Convert to hex using the symbols lookup table
+        for (uint256 i = length; i > 0; ) {
+            unchecked {
+                buffer[i - 1] = _SYMBOLS[value & 0xf];
+                value >>= 4;
+                --i;
+            }
         }
         
         return string(buffer);
