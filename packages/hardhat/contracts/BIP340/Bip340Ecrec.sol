@@ -118,7 +118,7 @@ library BIP340Util {
  * @notice Library for verifying BIP340 Schnorr signatures using the ecrecover optimization
  * @dev This library implements an efficient method to verify BIP340 Schnorr signatures
  *      by leveraging Ethereum's built-in ecrecover function through a clever mathematical trick.
- *      Based on research from hackmd.io
+ *      Based on: https://hackmd.io/@nZ-twauPRISEa6G9zg3XRw/SyjJzSLt9
  * @author Optimized implementation for gas efficiency
  */
 library BIP340Ecrec {

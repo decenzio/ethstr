@@ -19,16 +19,16 @@ test:
 	@yarn test
 
 clean:
-	@rm -rf artifacts cache typechain-types
+	@rm -rf artifacts cache typechain-types ignition/deployments
 
 deploy-sepolia:
-	@yarn deploy --network sepolia
+	@yarn hardhat ignition deploy ./ignition/modules/NpubContracts.ts --network sepolia
 
 deploy-zircuit:
-	@yarn deploy --network zircuit
+	@yarn hardhat ignition deploy ./ignition/modules/NpubContracts.ts --network zircuit
 
 deploy-base-sepolia:
-	@yarn deploy --network baseSepolia
+	@yarn hardhat ignition deploy ./ignition/modules/NpubContracts.ts --network baseSepolia
 
 deploy-all:
 	@$(MAKE) deploy-sepolia

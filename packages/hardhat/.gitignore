@@ -12,6 +12,9 @@ coverage.json
 typechain
 typechain-types
 
+# hardhat 3 generated types
+types/ethers-contracts
+
 # hardhat files
 cache
 artifacts
@@ -22,6 +25,9 @@ cache-zk
 
 # deployments
 deployments/localhost
+
+# hardhat ignition deployments (auto-generated state)
+ignition/deployments/
 
 # typescript
 *.tsbuildinfo
