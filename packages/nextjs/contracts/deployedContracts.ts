@@ -4,6 +4,129 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  11155111: {
+    NpubAccountFactory: {
+      address: "0xbFa5A21ADaA24746194547f44d44fd333729c662",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "contract IEntryPoint",
+              name: "_entryPoint",
+              type: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [],
+          name: "AccountCreationFailed",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "UnauthorizedCaller",
+          type: "error",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "owner",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "salt",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "bool",
+              name: "isNew",
+              type: "bool",
+            },
+          ],
+          name: "AccountCreated",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "accountImplementation",
+          outputs: [
+            {
+              internalType: "contract NpubAccount",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "owner",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "salt",
+              type: "uint256",
+            },
+          ],
+          name: "createAccount",
+          outputs: [
+            {
+              internalType: "contract NpubAccount",
+              name: "ret",
+              type: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "owner",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "salt",
+              type: "uint256",
+            },
+          ],
+          name: "getAddress",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 9453615,
+    },
+  },
+} as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;

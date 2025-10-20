@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 import "@openzeppelin/contracts/utils/Create2.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import "@account-abstraction/contracts/interfaces/ISenderCreator.sol";
+import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "./NpubAccount.sol";
 
 /**
@@ -28,10 +28,6 @@ interface INpubAccountFactory {
     /// @notice Returns the account implementation address
     /// @return The address of the NpubAccount implementation
     function accountImplementation() external view returns (NpubAccount);
-
-    /// @notice Returns the sender creator address
-    /// @return The address of the ISenderCreator contract
-    function senderCreator() external view returns (ISenderCreator);
 }
 
 /**
@@ -44,23 +40,20 @@ interface INpubAccountFactory {
  */
 contract NpubAccountFactory is INpubAccountFactory {
     // ============ State Variables ============
-    
+
     /// @notice The immutable account implementation contract
     NpubAccount public immutable override accountImplementation;
-    
-    /// @notice The immutable sender creator contract
-    ISenderCreator public immutable override senderCreator;
 
     // ============ Custom Errors ============
-    
+
     /// @notice Thrown when caller is not the authorized sender creator
     error UnauthorizedCaller();
-    
+
     /// @notice Thrown when account creation fails
     error AccountCreationFailed();
 
     // ============ Events ============
-    
+
     /// @notice Emitted when a new account is created
     /// @param account The address of the created account
     /// @param owner The Nostr public key that owns the account
@@ -69,16 +62,15 @@ contract NpubAccountFactory is INpubAccountFactory {
     event AccountCreated(address indexed account, uint256 indexed owner, uint256 indexed salt, bool isNew);
 
     // ============ Constructor ============
-    
+
     /// @notice Initializes the factory with the EntryPoint contract
     /// @param _entryPoint The EntryPoint contract address
     constructor(IEntryPoint _entryPoint) {
         accountImplementation = new NpubAccount(_entryPoint);
-        senderCreator = _entryPoint.senderCreator();
     }
 
     // ============ External Functions ============
-    
+
     /// @notice Creates a new NpubAccount or returns existing one
     /// @dev Returns the address even if the account is already deployed.
     ///      Note that during UserOperation execution, this method is called only if the account is not deployed.
@@ -87,25 +79,22 @@ contract NpubAccountFactory is INpubAccountFactory {
     /// @param salt The salt used for deterministic address generation
     /// @return ret The created or existing NpubAccount instance
     function createAccount(uint256 owner, uint256 salt) external override returns (NpubAccount ret) {
-        // Check authorization using custom error for gas efficiency
-        if (msg.sender != address(senderCreator)) {
-            revert UnauthorizedCaller();
-        }
-        
-        address addr = getAddress(owner, salt);
+        address addr = this.getAddress(owner, salt);
         uint256 codeSize = addr.code.length;
-        
+
         // Return existing account if already deployed
         if (codeSize > 0) {
             emit AccountCreated(addr, owner, salt, false);
             return NpubAccount(payable(addr));
         }
-        
+
         // Create new account using CREATE2 for deterministic address
-        try new ERC1967Proxy{salt: bytes32(salt)}(
-            address(accountImplementation),
-            abi.encodeCall(NpubAccount.initialize, (owner))
-        ) returns (ERC1967Proxy proxy) {
+        try
+            new ERC1967Proxy{ salt: bytes32(salt) }(
+                address(accountImplementation),
+                abi.encodeCall(NpubAccount.initialize, (owner))
+            )
+        returns (ERC1967Proxy proxy) {
             ret = NpubAccount(payable(address(proxy)));
             emit AccountCreated(address(ret), owner, salt, true);
         } catch {
@@ -119,15 +108,15 @@ contract NpubAccountFactory is INpubAccountFactory {
     /// @param salt The salt used for deterministic address generation
     /// @return The computed address of the account
     function getAddress(uint256 owner, uint256 salt) external view override returns (address) {
-        return Create2.computeAddress(
-            bytes32(salt), 
-            keccak256(abi.encodePacked(
-                type(ERC1967Proxy).creationCode,
-                abi.encode(
-                    address(accountImplementation),
-                    abi.encodeCall(NpubAccount.initialize, (owner))
+        return
+            Create2.computeAddress(
+                bytes32(salt),
+                keccak256(
+                    abi.encodePacked(
+                        type(ERC1967Proxy).creationCode,
+                        abi.encode(address(accountImplementation), abi.encodeCall(NpubAccount.initialize, (owner)))
+                    )
                 )
-            ))
-        );
+            );
     }
 }

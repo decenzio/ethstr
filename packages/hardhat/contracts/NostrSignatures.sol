@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "./BIP340/BIP340Ecrec.sol";
+import "./BIP340/Bip340Ecrec.sol";
 import "./utils/HexStrings.sol";
 
 /**
@@ -15,32 +15,32 @@ import "./utils/HexStrings.sol";
  */
 library NostrSignatures {
     // ============ Constants ============
-    
+
     /// @notice Expected signature length for BIP340 signatures (64 bytes: 32 bytes R + 32 bytes s)
     uint256 private constant SIGNATURE_LENGTH = 64;
-    
+
     /// @notice Nostr event kind for authentication (96024 is a common kind for auth events)
     uint256 private constant NOSTR_AUTH_KIND = 96024;
-    
+
     /// @notice Nostr event created_at timestamp (0 for immediate verification)
     uint256 private constant NOSTR_CREATED_AT = 0;
-    
+
     /// @notice Nostr event tags array (empty for auth events)
     string private constant NOSTR_TAGS = "[]";
 
     // ============ Errors ============
-    
+
     /// @notice Thrown when signature length is invalid
     error InvalidSignatureLength();
-    
+
     /// @notice Thrown when signature verification fails
     error SignatureVerificationFailed();
-    
+
     /// @notice Thrown when owner address is invalid (zero address)
     error InvalidOwnerAddress();
 
     // ============ Events ============
-    
+
     /// @notice Emitted when a Nostr signature is successfully verified
     /// @param owner The Nostr public key that signed the message
     /// @param userOpHash The hash of the user operation that was signed
@@ -67,7 +67,7 @@ library NostrSignatures {
         if (signature.length != SIGNATURE_LENGTH) {
             revert InvalidSignatureLength();
         }
-        
+
         if (owner == 0) {
             revert InvalidOwnerAddress();
         }
@@ -75,15 +75,15 @@ library NostrSignatures {
         // Construct the Nostr event message in the required JSON-like format
         // Format: [0, "<pubkey>", 0, 96024, [], "<userOpHash>"]
         bytes memory nostrEventMessage = abi.encodePacked(
-            '[',
+            "[",
             _uintToString(NOSTR_CREATED_AT),
             ',"',
             HexStrings.toHexString(owner),
             '",',
             _uintToString(NOSTR_CREATED_AT),
-            ',',
+            ",",
             _uintToString(NOSTR_AUTH_KIND),
-            ',',
+            ",",
             NOSTR_TAGS,
             ',"',
             HexStrings.toHexString(uint256(userOpHash)),
@@ -106,12 +106,12 @@ library NostrSignatures {
 
         // Verify the BIP340 signature
         success = BIP340Ecrec.verify(owner, signatureR, signatureS, messageHash);
-        
+
         // Revert with custom error if verification fails
         if (!success) {
             revert SignatureVerificationFailed();
         }
-        
+
         // Emit event for successful verification
         emit NostrSignatureVerified(owner, userOpHash);
     }
@@ -128,26 +128,26 @@ library NostrSignatures {
         if (value == 0) {
             return "0";
         }
-        
+
         uint256 temp = value;
         uint256 digits;
-        
+
         // Count digits
         while (temp != 0) {
             digits++;
             temp /= 10;
         }
-        
+
         // Allocate memory for the string
         bytes memory buffer = new bytes(digits);
-        
+
         // Convert to string (right to left)
         while (value != 0) {
             digits -= 1;
             buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
             value /= 10;
         }
-        
+
         return string(buffer);
     }
 
@@ -171,15 +171,15 @@ library NostrSignatures {
 
         // Construct the Nostr event message in the required JSON-like format
         bytes memory nostrEventMessage = abi.encodePacked(
-            '[',
+            "[",
             _uintToString(NOSTR_CREATED_AT),
             ',"',
             HexStrings.toHexString(owner),
             '",',
             _uintToString(NOSTR_CREATED_AT),
-            ',',
+            ",",
             _uintToString(NOSTR_AUTH_KIND),
-            ',',
+            ",",
             NOSTR_TAGS,
             ',"',
             HexStrings.toHexString(uint256(userOpHash)),
@@ -199,7 +199,7 @@ library NostrSignatures {
 
         // Verify the BIP340 signature
         success = BIP340Ecrec.verify(owner, signatureR, signatureS, messageHash);
-        
+
         // Emit event for successful verification
         if (success) {
             emit NostrSignatureVerified(owner, userOpHash);

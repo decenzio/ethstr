@@ -1,0 +1,26 @@
+{
+  "contracts": {
+    "sepolia": {
+      "chainId": 11155111,
+      "NpubAccountFactory": "0x78dD6a85e1D44724F3c57AC4E38BB8CBfA036aFf",
+      "NpubAccountImplementation": "0xd8AB42C80c3aF6cA44D7EC978664647bc0C42A3c",
+      "EntryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+    },
+    "zircuit": {
+      "chainId": 48899,
+      "NpubAccountFactory": "",
+      "NpubAccountImplementation": "",
+      "EntryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+    },
+    "baseSepolia": {
+      "chainId": 84532,
+      "NpubAccountFactory": "",
+      "NpubAccountImplementation": "",
+      "EntryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+    }
+  },
+  "metadata": {
+    "lastUpdated": "2025-10-20T15:20:00Z",
+    "version": "1.0.0"
+  }
+}

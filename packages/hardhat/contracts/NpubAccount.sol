@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@account-abstraction/contracts/core/BaseAccount.sol";
 import "@account-abstraction/contracts/core/Helpers.sol";
-import "@account-abstraction/contracts/accounts/callback/TokenCallbackHandler.sol";
+import "@account-abstraction/contracts/samples/callback/TokenCallbackHandler.sol";
 
 import "./NostrSignatures.sol";
 
@@ -20,7 +20,7 @@ import "./NostrSignatures.sol";
  */
 contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Initializable, ReentrancyGuard {
     // ============ State Variables ============
-    
+
     /// @notice The Nostr public key (x-coordinate) that owns this account
     uint256 public owner;
 
@@ -28,49 +28,49 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     IEntryPoint private immutable _entryPoint;
 
     // ============ Events ============
-    
+
     /// @notice Emitted when the account is initialized with a new owner
     /// @param entryPoint The EntryPoint contract address
     /// @param owner The Nostr public key that owns this account
     event AccountInitialized(IEntryPoint indexed entryPoint, uint256 indexed owner);
-    
+
     /// @notice Emitted when ETH is deposited to the EntryPoint
     /// @param amount The amount of ETH deposited
     /// @param newBalance The new deposit balance in EntryPoint
     event DepositAdded(uint256 indexed amount, uint256 indexed newBalance);
-    
+
     /// @notice Emitted when ETH is withdrawn from the EntryPoint
     /// @param to The address that received the withdrawn funds
     /// @param amount The amount of ETH withdrawn
     /// @param newBalance The new deposit balance in EntryPoint
     event DepositWithdrawn(address indexed to, uint256 indexed amount, uint256 indexed newBalance);
-    
+
     /// @notice Emitted when the account implementation is upgraded
     /// @param newImplementation The address of the new implementation
     event AccountUpgraded(address indexed newImplementation);
 
     // ============ Errors ============
-    
+
     /// @notice Thrown when a function is called by an unauthorized address
     error UnauthorizedCaller();
-    
+
     /// @notice Thrown when the owner address is invalid (zero)
     error InvalidOwner();
-    
+
     /// @notice Thrown when attempting to withdraw more than available deposit
     error InsufficientDeposit();
-    
+
     /// @notice Thrown when attempting to withdraw to zero address
     error InvalidWithdrawAddress();
-    
+
     /// @notice Thrown when attempting to deposit zero amount
     error ZeroDepositAmount();
-    
+
     /// @notice Thrown when EntryPoint address is invalid
     error InvalidEntryPoint();
 
     // ============ Modifiers ============
-    
+
     /// @notice Restricts function access to the account owner only
     modifier onlyOwner() {
         _onlyOwner();
@@ -78,7 +78,7 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     }
 
     // ============ View Functions ============
-    
+
     /// @notice Returns the EntryPoint contract address
     /// @return The EntryPoint contract instance
     function entryPoint() public view virtual override returns (IEntryPoint) {
@@ -86,7 +86,7 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     }
 
     // ============ Receive Function ============
-    
+
     /// @notice Allows the contract to receive ETH
     /// @dev This function enables the contract to accept ETH transfers
     receive() external payable {
@@ -94,7 +94,7 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     }
 
     // ============ Constructor ============
-    
+
     /// @notice Initializes the contract with the EntryPoint address
     /// @dev Disables initializers to prevent direct initialization
     /// @param anEntryPoint The EntryPoint contract address for account abstraction
@@ -107,7 +107,7 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     }
 
     // ============ Internal Functions ============
-    
+
     /// @notice Internal function to check if the caller is the owner
     /// @dev The account itself (which gets redirected through execute()) is considered the owner
     function _onlyOwner() internal view {
@@ -117,7 +117,7 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     }
 
     // ============ Initialization Functions ============
-    
+
     /// @notice Initializes the account with a Nostr public key owner
     /// @dev The EntryPoint member is immutable to reduce gas consumption. To upgrade EntryPoint,
     ///      a new implementation must be deployed with the new EntryPoint address, then upgrading
@@ -139,11 +139,11 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     }
 
     // ============ Execution Functions ============
-    
+
     /// @notice Validates that the function call went through EntryPoint
     /// @dev Override from BaseAccount to ensure proper execution context
-    function _requireForExecute() internal view override virtual {
-        if (msg.sender != address(entryPoint())) {
+    function _requireFromEntryPointOrSelf() internal view virtual {
+        if (msg.sender != address(entryPoint()) && msg.sender != address(this)) {
             revert UnauthorizedCaller();
         }
     }
@@ -153,12 +153,10 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     /// @param userOp The packed user operation containing the signature
     /// @param userOpHash The hash of the user operation to validate against
     /// @return validationData The validation result (SIG_VALIDATION_SUCCESS or SIG_VALIDATION_FAILED)
-    function _validateSignature(PackedUserOperation calldata userOp, bytes32 userOpHash)
-        internal 
-        override 
-        virtual 
-        returns (uint256 validationData) 
-    {
+    function _validateSignature(
+        PackedUserOperation calldata userOp,
+        bytes32 userOpHash
+    ) internal virtual override returns (uint256 validationData) {
         // UserOpHash can be generated using eth_signTypedData_v4
         if (NostrSignatures.verifyNostrSignature(owner, userOp.signature, userOpHash)) {
             return SIG_VALIDATION_SUCCESS;
@@ -167,7 +165,7 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
     }
 
     // ============ Deposit Management Functions ============
-    
+
     /// @notice Returns the current account deposit balance in the EntryPoint
     /// @return The current deposit balance in wei
     function getDeposit() public view returns (uint256) {
@@ -180,12 +178,12 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
         if (msg.value == 0) {
             revert ZeroDepositAmount();
         }
-        
+
         // Checks-Effects-Interactions pattern
         uint256 amount = msg.value;
-        entryPoint().depositTo{value: amount}(address(this));
+        entryPoint().depositTo{ value: amount }(address(this));
         uint256 newBalance = entryPoint().balanceOf(address(this));
-        
+
         emit DepositAdded(amount, newBalance);
     }
 
@@ -197,21 +195,21 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
         if (withdrawAddress == address(0)) {
             revert InvalidWithdrawAddress();
         }
-        
+
         // Checks-Effects-Interactions pattern
         uint256 currentDeposit = entryPoint().balanceOf(address(this));
         if (amount > currentDeposit) {
             revert InsufficientDeposit();
         }
-        
+
         entryPoint().withdrawTo(withdrawAddress, amount);
         uint256 newBalance = entryPoint().balanceOf(address(this));
-        
+
         emit DepositWithdrawn(withdrawAddress, amount, newBalance);
     }
 
     // ============ Upgrade Functions ============
-    
+
     /// @notice Authorizes the upgrade to a new implementation
     /// @dev Only the account owner can authorize upgrades
     /// @param newImplementation The address of the new implementation contract

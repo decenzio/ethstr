@@ -26,10 +26,30 @@ async function main() {
     return;
   }
 
+  // Check if unencrypted private key is already set
+  const unencryptedKey = process.env.__RUNTIME_DEPLOYER_PRIVATE_KEY;
+
+  if (unencryptedKey) {
+    // Use unencrypted key directly - no password needed!
+    console.log("🔓 Using unencrypted private key from .env");
+    const hardhat = spawn("hardhat", ["deploy", ...process.argv.slice(2)], {
+      stdio: "inherit",
+      env: process.env,
+      shell: process.platform === "win32",
+    });
+
+    hardhat.on("exit", code => {
+      process.exit(code || 0);
+    });
+    return;
+  }
+
+  // Fall back to encrypted key if no unencrypted key is found
   const encryptedKey = process.env.DEPLOYER_PRIVATE_KEY_ENCRYPTED;
 
   if (!encryptedKey) {
     console.log("🚫️ You don't have a deployer account. Run `yarn generate` or `yarn account:import` first");
+    console.log("📝 Or add __RUNTIME_DEPLOYER_PRIVATE_KEY to your .env file");
     return;
   }
 
