@@ -15119,6 +15119,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"permissionless@npm:^0.2.57":
+  version: 0.2.57
+  resolution: "permissionless@npm:0.2.57"
+  peerDependencies:
+    ox: ^0.8.0
+    viem: ^2.28.1
+  peerDependenciesMeta:
+    ox:
+      optional: true
+  checksum: f1d6b9577404a9ff6096b59d51a4fb410157bc8480d7d7f348803e05be4ed8799765a945ce9e6b0917e61a46b4c4b9287a51fbc4fe126c6dbbc33de7cd53abec
+  languageName: node
+  linkType: hard
+
 "picocolors@npm:1.0.0, picocolors@npm:^1.0.0":
   version: 1.0.0
   resolution: "picocolors@npm:1.0.0"
@@ -16368,6 +16381,7 @@ __metadata:
   dependencies:
     husky: ^9.1.6
     lint-staged: ^15.2.10
+    permissionless: ^0.2.57
   languageName: unknown
   linkType: soft
 
