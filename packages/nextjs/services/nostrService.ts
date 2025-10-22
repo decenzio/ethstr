@@ -1,7 +1,8 @@
 import { nip19 } from "nostr-tools";
 import { createPublicClient, http } from "viem";
-import { base } from "viem/chains";
+import { getAppChainConfig } from "~~/config/appChains";
 import { toNostrSmartAccount } from "~~/services/nostrSmartAccount";
+import { useGlobalState } from "~~/services/store/store";
 
 let nostrPubkey: string | null = null;
 
@@ -52,14 +53,21 @@ export const nostrService = {
   async getEthAddress(nPub: string): Promise<string | null> {
     const decodedValue = nostrService.getNostrPubkey(nPub);
 
+    // Get the currently selected network from global state
+    const targetNetwork = useGlobalState.getState().targetNetwork;
+    const appChainConfig = getAppChainConfig(targetNetwork.id);
+
     const publicClient = createPublicClient({
-      chain: base,
-      transport: http("https://base-mainnet.public.blastapi.io"),
+      chain: targetNetwork,
+      transport: http(
+        appChainConfig.bundlerUrl || `https://${targetNetwork.name.toLowerCase()}-mainnet.public.blastapi.io`,
+      ),
     });
 
     const account = await toNostrSmartAccount({
       client: publicClient,
       owner: `0x${decodedValue}`,
+      factoryAddress: appChainConfig.factoryAddress,
     });
 
     const address = await account.getAddress();

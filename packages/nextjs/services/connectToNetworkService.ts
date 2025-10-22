@@ -1,7 +1,7 @@
 import { toNostrSmartAccount } from "./nostrSmartAccount";
 import { createSmartAccountClient } from "permissionless";
 import { createPublicClient, http, webSocket } from "viem";
-import { base } from "viem/chains";
+import { getAppChainConfig } from "~~/config/appChains";
 import { nostrService } from "~~/services/nostrService";
 import { useGlobalState } from "~~/services/store/store";
 
@@ -20,9 +20,21 @@ export const connectService = {
       return null;
     }
 
+    return await this.initializeForCurrentNetwork(pubkey, npub);
+  },
+
+  async initializeForCurrentNetwork(pubkey: string, npub: string): Promise<ConnectService | null> {
+    // Get the currently selected network from global state
+    const targetNetwork = useGlobalState.getState().targetNetwork;
+    const appChainConfig = getAppChainConfig(targetNetwork.id);
+
+    // Create public client with the selected network
     const publicClient = createPublicClient({
-      chain: base,
-      transport: webSocket("wss://base-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94"),
+      chain: targetNetwork,
+      transport: webSocket(
+        appChainConfig.bundlerUrl ||
+          `wss://${targetNetwork.name.toLowerCase()}-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94`,
+      ),
     });
 
     useGlobalState.getState().setPublicClient(publicClient);
@@ -30,14 +42,18 @@ export const connectService = {
     const evmAccount = await toNostrSmartAccount({
       client: publicClient,
       owner: `0x${pubkey}`,
+      factoryAddress: appChainConfig.factoryAddress,
     });
 
     useGlobalState.getState().setEvmAccount(evmAccount);
 
     const bundlerClient = createSmartAccountClient({
       account: evmAccount,
-      chain: base,
-      bundlerTransport: http(`https://api.pimlico.io/v2/8453/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC`), // Use any bundler url
+      chain: targetNetwork,
+      bundlerTransport: http(
+        appChainConfig.bundlerUrl ||
+          `https://api.pimlico.io/v2/${targetNetwork.id}/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC`,
+      ),
     });
 
     useGlobalState.getState().setBundlerClient(bundlerClient);
@@ -48,5 +64,17 @@ export const connectService = {
     useGlobalState.getState().setNPubKey(npub);
 
     return { ethPubkey: ethPubKey, nPubkey: npub };
+  },
+
+  // Re-initialize services when network changes
+  async reinitializeForNewNetwork(): Promise<ConnectService | null> {
+    const pubkey: string | null = nostrService.getPubkey();
+    const npub: string | null = nostrService.getNostrNpub();
+
+    if (!npub || !pubkey) {
+      return null;
+    }
+
+    return await this.initializeForCurrentNetwork(pubkey, npub);
   },
 };

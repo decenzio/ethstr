@@ -26,4 +26,10 @@ export const transactionService = {
     if (!amountEth || Number.isNaN(Number(amountEth))) return 0n;
     return parseEther(amountEth as `${number}`);
   },
+  // Check if the current network is supported for transactions
+  isNetworkSupported(): boolean {
+    const publicClient = useGlobalState.getState().publicClient;
+    const bundlerClient = useGlobalState.getState().bundlerClient;
+    return !!(publicClient && bundlerClient);
+  },
 };
