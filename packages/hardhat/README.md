@@ -41,7 +41,7 @@ make deploy-all           # Deploy to all networks
 ## Networks
 
 - Sepolia (Chain ID: 11155111)
-- Zircuit Testnet (Chain ID: 48899)
+- Zircuit Testnet (Chain ID: 48898)
 - Base Sepolia (Chain ID: 84532)
 
 ## After Deployment
@@ -57,7 +57,7 @@ Max 3 networks kept automatically.
 
 - Sepolia: https://sepoliafaucet.com
 - Base Sepolia: https://bridge.base.org
-- Zircuit: https://faucet.zircuit.com
+- Zircuit: https://bridge.garfield-testnet.zircuit.com/
 
 ---
 

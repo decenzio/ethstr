@@ -61,7 +61,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "@account-abstraction/contracts": "^0.7.0",
+    "@account-abstraction/contracts": "^0.8.0",
     "@inquirer/password": "^4.0.2",
     "@openzeppelin/contracts": "^5.0.2",
     "@typechain/ethers-v6": "^0.5.1",

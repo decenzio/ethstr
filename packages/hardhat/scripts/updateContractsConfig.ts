@@ -5,7 +5,7 @@ const ENTRY_POINT_ADDRESS = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
 
 const NETWORK_CONFIG: Record<string, { chainId: number; name: string }> = {
   sepolia: { chainId: 11155111, name: "sepolia" },
-  zircuit: { chainId: 48899, name: "zircuit" },
+  zircuit: { chainId: 48898, name: "zircuit" },
   baseSepolia: { chainId: 84532, name: "baseSepolia" },
 };
 

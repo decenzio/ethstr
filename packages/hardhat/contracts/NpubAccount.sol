@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@account-abstraction/contracts/core/BaseAccount.sol";
 import "@account-abstraction/contracts/core/Helpers.sol";
-import "@account-abstraction/contracts/samples/callback/TokenCallbackHandler.sol";
+import "@account-abstraction/contracts/accounts/callback/TokenCallbackHandler.sol";
 
 import "./NostrSignatures.sol";
 
@@ -142,7 +142,7 @@ contract NpubAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Init
 
     /// @notice Validates that the function call went through EntryPoint
     /// @dev Override from BaseAccount to ensure proper execution context
-    function _requireFromEntryPointOrSelf() internal view virtual {
+    function _requireForExecute() internal view virtual override {
         if (msg.sender != address(entryPoint()) && msg.sender != address(this)) {
             revert UnauthorizedCaller();
         }

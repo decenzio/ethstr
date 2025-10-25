@@ -12,13 +12,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@account-abstraction/contracts@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@account-abstraction/contracts@npm:0.7.0"
+"@account-abstraction/contracts@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@account-abstraction/contracts@npm:0.8.0"
   dependencies:
-    "@openzeppelin/contracts": ^5.0.0
+    "@openzeppelin/contracts": ^5.1.0
     "@uniswap/v3-periphery": ^1.4.3
-  checksum: a5e60311d890a869cdba779e0b305ef62cafa80b9199d96baa34a443be1b5b3d2d8272de63c3360806a2527c95ff23d14e7ed717d4185c1c9155d2428643b17b
+  checksum: c73d4d56cb91b37330f6b66d1141130c1cc368b7c68e420f456d3a3dd52d34ec2554bf40e59b02afa4da87c0fda4eb8e7ee717d46d0eb541a9508d1375473c04
   languageName: node
   linkType: hard
 
@@ -4000,17 +4000,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts@npm:^5.0.0":
-  version: 5.4.0
-  resolution: "@openzeppelin/contracts@npm:5.4.0"
-  checksum: 8a0c64266f5213801029251fdc9815798917b311b7fc9acb94db13a479a3a0d044e0312f57e739f13b87161105157cb8da023124b4f026cf6b72a718a333ef64
-  languageName: node
-  linkType: hard
-
 "@openzeppelin/contracts@npm:^5.0.2":
   version: 5.0.2
   resolution: "@openzeppelin/contracts@npm:5.0.2"
   checksum: 0cce6fc284bd1d89e2a447027832a62f1356b44ee31088899453e10349a63a62df2f07da63d76e4c41aad9c86b96b650b2b6fc85439ef276850dda1170a047fd
+  languageName: node
+  linkType: hard
+
+"@openzeppelin/contracts@npm:^5.1.0":
+  version: 5.4.0
+  resolution: "@openzeppelin/contracts@npm:5.4.0"
+  checksum: 8a0c64266f5213801029251fdc9815798917b311b7fc9acb94db13a479a3a0d044e0312f57e739f13b87161105157cb8da023124b4f026cf6b72a718a333ef64
   languageName: node
   linkType: hard
 
@@ -4442,7 +4442,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@se-2/hardhat@workspace:packages/hardhat"
   dependencies:
-    "@account-abstraction/contracts": ^0.7.0
+    "@account-abstraction/contracts": ^0.8.0
     "@ethersproject/abi": ^5.7.0
     "@ethersproject/providers": ^5.7.2
     "@inquirer/password": ^4.0.2
