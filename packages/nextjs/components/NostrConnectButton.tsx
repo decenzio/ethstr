@@ -1,13 +1,22 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
+import { useCopyToClipboard } from "~~/hooks/scaffold-eth";
 import { nostr, useNip07Ready } from "~~/services/connectNostrExtensionService";
+import { connectService } from "~~/services/connectToNetworkService";
+import { useGlobalState } from "~~/services/store/store";
 
 export const NostrConnectButton = () => {
   const ready = useNip07Ready();
   const [pubkeyHex, setPubkeyHex] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initializingAA, setInitializingAA] = useState(false);
+  const { copyToClipboard, isCopiedToClipboard } = useCopyToClipboard();
+
+  // Get wallet address from global state to check if AA is initialized
+  const walletAddress = useGlobalState(state => state.walletAddress);
 
   const handleConnectNostr = useCallback(async () => {
     if (!ready) {
@@ -19,6 +28,20 @@ export const NostrConnectButton = () => {
     try {
       const session = await nostr.connect();
       setPubkeyHex(session.pubkey);
+
+      // Initialize Account Abstraction after Nostr connection
+      setInitializingAA(true);
+      try {
+        const result = await connectService.connect();
+        if (!result) {
+          setError("Failed to initialize smart account");
+        }
+      } catch (aaError: any) {
+        console.error("Account Abstraction initialization failed:", aaError);
+        setError(`AA Init failed: ${aaError.message || "Unknown error"}`);
+      } finally {
+        setInitializingAA(false);
+      }
     } catch (e: any) {
       const message = e?.message ?? "Failed to connect";
       setError(message);
@@ -133,15 +156,47 @@ export const NostrConnectButton = () => {
     return `${npub.slice(0, 12)}…${npub.slice(-8)}`;
   }, [npub]);
 
+  const handleCopyNpub = useCallback(async () => {
+    if (!npub) return;
+    try {
+      await copyToClipboard(npub);
+    } catch (error) {
+      console.error("Failed to copy npub:", error);
+    }
+  }, [npub, copyToClipboard]);
+
   const isConnected = !!pubkeyHex;
+  const isAAInitialized = !!walletAddress;
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex items-center min-w-0" aria-live="polite">
+      <div className="flex flex-col items-end min-w-0" aria-live="polite">
         {npub ? (
-          <span className="font-mono text-xs truncate max-w-[180px]" title={npub} aria-label="Your Nostr npub">
-            {shortNpub}
-          </span>
+          <>
+            <div
+              className="flex items-center gap-1 group cursor-pointer"
+              onClick={handleCopyNpub}
+              title="Click to copy npub"
+            >
+              <span className="font-mono text-xs truncate max-w-[160px]" aria-label="Your Nostr npub">
+                {shortNpub}
+              </span>
+              {isCopiedToClipboard ? (
+                <CheckCircleIcon className="h-3 w-3 text-success flex-shrink-0" />
+              ) : (
+                <DocumentDuplicateIcon className="h-3 w-3 opacity-60 group-hover:opacity-100 flex-shrink-0" />
+              )}
+            </div>
+            {walletAddress && (
+              <span
+                className="font-mono text-[10px] text-success truncate max-w-[180px]"
+                title={`Smart Account: ${walletAddress}`}
+                aria-label="Your smart account address"
+              >
+                AA: {walletAddress.slice(0, 6)}…{walletAddress.slice(-4)}
+              </span>
+            )}
+          </>
         ) : (
           <span className="badge badge-ghost">Not connected</span>
         )}
@@ -153,9 +208,19 @@ export const NostrConnectButton = () => {
         tabIndex={0}
         onClick={handleConnectNostr}
         onKeyDown={handleKeyDownConnect}
-        disabled={!ready || connecting || isConnected}
+        disabled={!ready || connecting || isConnected || initializingAA}
       >
-        {connecting ? "Connecting…" : isConnected ? "Connected" : ready ? "Connect Nostr" : "No Nostr wallet"}
+        {initializingAA
+          ? "Initializing AA…"
+          : connecting
+            ? "Connecting…"
+            : isConnected
+              ? isAAInitialized
+                ? "Connected"
+                : "AA Failed"
+              : ready
+                ? "Connect Nostr"
+                : "No Nostr wallet"}
       </button>
       {error ? (
         <span className="text-xs text-error" role="alert">
