@@ -23,7 +23,12 @@ export const APP_CHAIN_CONFIG: Record<number, AppChainConfig> = {
     blockExplorerUrl: "http://localhost:3000/blockexplorer",
   },
   [chains.sepolia.id]: {
-    bundlerUrl: process.env.NEXT_PUBLIC_BUNDLER_URL_SEPOLIA || "",
+    bundlerUrl:
+      process.env.NEXT_PUBLIC_BUNDLER_URL_BASE ||
+      "https://api.pimlico.io/v2/11155111/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC",
+    rpcUrl: process.env.NEXT_PUBLIC_RPC_URL_BASE || "https://eth-sepolia.public.blastapi.io",
+    wsRpcUrl:
+      process.env.NEXT_PUBLIC_WS_RPC_URL_BASE || "wss://eth-sepolia.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94",
     factoryAddress: "0xaCeEF9bf23b41D4898516D2Fdcd7b4BDc22444D7",
     blockExplorerUrl: "https://sepolia.etherscan.io",
   },
