@@ -1,5 +1,4 @@
 import { type Address } from "viem";
-import { getAppChainConfig } from "~~/config/appChains";
 
 export type EvmAddressApiSuccess = { "EVM-address": Address };
 export type EvmAddressApiError = { error: string; code?: string };
@@ -11,23 +10,8 @@ const isSuccessResponse = (data: unknown): data is EvmAddressApiSuccess => {
   return typeof value === "string" && value.startsWith("0x") && value.length === 42;
 };
 
-const buildEndpointUrl = (npub: string, chainId: number, apiUrl?: string): string => {
-  const path = `/api/v1/EVM/address/${encodeURIComponent(npub)}?chainId=${chainId}`;
-
-  // Use provided apiUrl or get from global state
-  let finalApiUrl = apiUrl;
-  if (!finalApiUrl) {
-    const appChainConfig = getAppChainConfig(chainId);
-    finalApiUrl = appChainConfig.apiBaseUrl || "";
-  }
-
-  if (!finalApiUrl) {
-    // Fallback to relative path for same-origin requests
-    return path;
-  }
-
-  const trimmed = finalApiUrl.endsWith("/") ? finalApiUrl.slice(0, -1) : finalApiUrl;
-  return `${trimmed}${path}`;
+const buildEndpointUrl = (npub: string, chainId: number): string => {
+  return `/api/v1/EVM/address/${encodeURIComponent(npub)}?chainId=${chainId}`;
 };
 
 export const getEvmAddressFromNpub = async (
@@ -39,7 +23,7 @@ export const getEvmAddressFromNpub = async (
     throw new Error("npub is required");
   }
 
-  const url = buildEndpointUrl(npub, chainId, options?.apiUrl);
+  const url = buildEndpointUrl(npub, chainId);
   const res = await fetch(url, {
     method: "GET",
     headers: { "content-type": "application/json" },

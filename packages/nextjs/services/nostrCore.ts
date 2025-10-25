@@ -76,6 +76,7 @@ export const getEthAddressFromNpub = async (nPub: string, chainId: number): Prom
     client: publicClient,
     owner: `0x${decodedValue}`,
     factoryAddress: appChainConfig.factoryAddress,
+    targetChainId: chainId,
   });
 
   const address = await account.getAddress();

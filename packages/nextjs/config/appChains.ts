@@ -3,53 +3,44 @@ import * as chains from "viem/chains";
 
 export type AppChainConfig = {
   bundlerUrl: string;
-  rpcUrl?: string;
-  wsRpcUrl?: string;
-  entryPointAddress?: Address;
-  factoryAddress?: Address;
-  relayerUrl?: string;
-  apiBaseUrl?: string;
-  blockExplorerUrl?: string;
+  rpcUrl: string;
+  wsRpcUrl: string;
+  entryPointAddress: Address;
+  factoryAddress: Address;
+  relayerUrl: string;
+  blockExplorerUrl: string;
 };
 
 // Configuration for each supported network
-// Values from ethba2025 project, can be overridden via environment variables
+// Addresses from deployments/addresses.json - updated from hardhat deployments
 export const APP_CHAIN_CONFIG: Record<number, AppChainConfig> = {
   [chains.hardhat.id]: {
-    bundlerUrl: process.env.NEXT_PUBLIC_BUNDLER_URL_LOCAL || "http://localhost:4337",
-    rpcUrl: process.env.NEXT_PUBLIC_RPC_URL_LOCAL || "http://localhost:8545",
-    factoryAddress: "0xaCeEF9bf23b41D4898516D2Fdcd7b4BDc22444D7",
-    apiBaseUrl: "http://localhost:3000/api",
+    bundlerUrl: "http://localhost:4337",
+    rpcUrl: "http://localhost:8545",
+    wsRpcUrl: "",
+    entryPointAddress: "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+    factoryAddress: "",
+    relayerUrl: "",
     blockExplorerUrl: "http://localhost:3000/blockexplorer",
   },
   [chains.sepolia.id]: {
-    bundlerUrl:
-      process.env.NEXT_PUBLIC_BUNDLER_URL_BASE ||
-      "https://api.pimlico.io/v2/11155111/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC",
-    rpcUrl: process.env.NEXT_PUBLIC_RPC_URL_BASE || "https://eth-sepolia.public.blastapi.io",
-    wsRpcUrl:
-      process.env.NEXT_PUBLIC_WS_RPC_URL_BASE || "wss://eth-sepolia.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94",
-    factoryAddress: "0xaCeEF9bf23b41D4898516D2Fdcd7b4BDc22444D7",
+    bundlerUrl: "https://api.pimlico.io/v2/11155111/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC",
+    rpcUrl: "https://eth-sepolia.public.blastapi.io",
+    wsRpcUrl: "wss://eth-sepolia.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94",
+    entryPointAddress: "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+    factoryAddress: "0xbFa5A21ADaA24746194547f44d44fd333729c662",
+    relayerUrl: "",
     blockExplorerUrl: "https://sepolia.etherscan.io",
   },
   [chains.base.id]: {
-    // Pimlico bundler URL from ethba2025 (Base Mainnet chain ID: 8453)
-    bundlerUrl:
-      process.env.NEXT_PUBLIC_BUNDLER_URL_BASE ||
-      "https://api.pimlico.io/v2/8453/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC",
-    // RPC URLs from ethba2025
-    rpcUrl: process.env.NEXT_PUBLIC_RPC_URL_BASE || "https://base-mainnet.public.blastapi.io",
-    wsRpcUrl:
-      process.env.NEXT_PUBLIC_WS_RPC_URL_BASE || "wss://base-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94",
-    // Factory address from ethba2025
+    // Pimlico bundler URL (Base Mainnet chain ID: 8453)
+    bundlerUrl: "https://api.pimlico.io/v2/8453/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC",
+    rpcUrl: "https://base-mainnet.public.blastapi.io",
+    wsRpcUrl: "wss://base-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94",
+    entryPointAddress: "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
     factoryAddress: "0xaCeEF9bf23b41D4898516D2Fdcd7b4BDc22444D7",
-    // Block explorer from ethba2025
+    relayerUrl: "",
     blockExplorerUrl: "https://basescan.org",
-  },
-  [chains.arbitrumSepolia.id]: {
-    bundlerUrl: process.env.NEXT_PUBLIC_BUNDLER_URL_ARB_SEPOLIA || "",
-    factoryAddress: "0xaCeEF9bf23b41D4898516D2Fdcd7b4BDc22444D7",
-    blockExplorerUrl: "https://sepolia.arbiscan.io",
   },
   // TODO: Add Zircuit Garfield when chain object/details available
 };
