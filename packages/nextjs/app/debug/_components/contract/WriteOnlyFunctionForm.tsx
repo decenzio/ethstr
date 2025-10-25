@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { InheritanceTooltip } from "./InheritanceTooltip";
 import { Abi, AbiFunction } from "abitype";
 import { Address, TransactionReceipt } from "viem";
-import { useAccount, useConfig, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useConfig, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import {
   ContractInput,
   TxReceipt,
@@ -16,6 +16,7 @@ import {
 import { IntegerInput } from "~~/components/scaffold-eth";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
+import { useNostrConnection } from "~~/hooks/useNostrConnection";
 import { AllowedChainIds } from "~~/utils/scaffold-eth";
 import { simulateContractWriteAndNotifyError } from "~~/utils/scaffold-eth/contract";
 
@@ -36,10 +37,10 @@ export const WriteOnlyFunctionForm = ({
 }: WriteOnlyFunctionFormProps) => {
   const [form, setForm] = useState<Record<string, any>>(() => getInitialFormState(abiFunction));
   const [txValue, setTxValue] = useState<string>("");
-  const { chain } = useAccount();
+  const { isConnected, isAAInitialized } = useNostrConnection();
   const writeTxn = useTransactor();
   const { targetNetwork } = useTargetNetwork();
-  const writeDisabled = !chain || chain?.id !== targetNetwork.id;
+  const writeDisabled = !isConnected || !isAAInitialized;
 
   const { data: result, isPending, writeContractAsync } = useWriteContract();
 
@@ -98,6 +99,18 @@ export const WriteOnlyFunctionForm = ({
 
   return (
     <div className="py-5 space-y-3 first:pt-0 last:pb-1">
+      {/* Connection Status Warning */}
+      {!isConnected && (
+        <div className="alert alert-warning">
+          <span className="text-sm">Please connect your Nostr wallet to interact with contracts</span>
+        </div>
+      )}
+      {isConnected && !isAAInitialized && (
+        <div className="alert alert-info">
+          <span className="text-sm">Account Abstraction is initializing, please wait...</span>
+        </div>
+      )}
+
       <div className={`flex gap-3 ${zeroInputs ? "flex-row justify-between items-center" : "flex-col"}`}>
         <p className="font-medium my-0 break-words">
           {abiFunction.name}
@@ -129,7 +142,7 @@ export const WriteOnlyFunctionForm = ({
               writeDisabled &&
               "tooltip tooltip-bottom tooltip-secondary before:content-[attr(data-tip)] before:-translate-x-1/3 before:left-auto before:transform-none"
             }`}
-            data-tip={`${writeDisabled && "Wallet not connected or in the wrong network"}`}
+            data-tip={`${writeDisabled && "Nostr wallet not connected or Account Abstraction not initialized"}`}
           >
             <button className="btn btn-secondary btn-sm" disabled={writeDisabled || isPending} onClick={handleWrite}>
               {isPending && <span className="loading loading-spinner loading-xs"></span>}

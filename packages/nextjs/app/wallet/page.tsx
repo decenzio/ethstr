@@ -1,20 +1,32 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address } from "viem";
-import { useAccount } from "wagmi";
 import { AddressInput, EtherInput } from "~~/components/scaffold-eth";
 import { useSelectedNetwork } from "~~/hooks/scaffold-eth/useSelectedNetwork";
+import { connectService } from "~~/services/connectToNetworkService";
 import { transactionService } from "~~/services/sendTransactionService";
+import { useGlobalState } from "~~/services/store/store";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 const WalletPage = () => {
-  const { address: eoaAddress } = useAccount();
   const network = useSelectedNetwork();
+  const walletAddress = useGlobalState(state => state.walletAddress);
+  const nPubkey = useGlobalState(state => state.nPubkey);
   const [to, setTo] = useState<Address | string>("");
   const [amountEth, setAmountEth] = useState<string>("");
   const [txHash, setTxHash] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+
+  const isAAInitialized = transactionService.isNetworkSupported();
+
+  // Restore connection if we have nPubkey but no AA initialization
+  useEffect(() => {
+    if (nPubkey && !isAAInitialized) {
+      // Try to reinitialize the connection
+      connectService.reinitializeForNewNetwork().catch(console.error);
+    }
+  }, [nPubkey, isAAInitialized]);
 
   const handleSend = useCallback(async () => {
     if (!to || !amountEth) return;
@@ -33,14 +45,18 @@ const WalletPage = () => {
   }, [to, amountEth]);
 
   const explorerLink = useMemo(() => (txHash ? getBlockExplorerTxLink(network.id, txHash) : ""), [txHash, network.id]);
-  const isDisabled = useMemo(() => sending || !to || !amountEth, [sending, to, amountEth]);
+  const isDisabled = useMemo(
+    () => !isAAInitialized || sending || !to || !amountEth,
+    [isAAInitialized, sending, to, amountEth],
+  );
   const disabledTitle = useMemo(() => {
+    if (!isAAInitialized) return "Connect Nostr wallet first";
     if (sending) return "Transaction in progress";
     if (!to && !amountEth) return "Enter recipient and amount";
     if (!to) return "Enter recipient";
     if (!amountEth) return "Enter amount";
     return "";
-  }, [sending, to, amountEth]);
+  }, [isAAInitialized, sending, to, amountEth]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -53,25 +69,57 @@ const WalletPage = () => {
           </p>
         </div>
 
+        {/* AA Initialization Warning */}
+        {!isAAInitialized && (
+          <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  Account Abstraction Not Initialized
+                </h3>
+                <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                  {nPubkey
+                    ? "Your smart account is being initialized. Please wait a moment."
+                    : "Please connect your Nostr wallet using the button in the header to enable transactions."}
+                </p>
+                {walletAddress && (
+                  <p className="mt-2 text-xs font-mono text-amber-600 dark:text-amber-400">
+                    Smart Account: {walletAddress}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Network Status Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <div className={`w-3 h-3 rounded-full ${isAAInitialized ? "bg-green-500" : "bg-yellow-500"}`}></div>
               <div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Network</p>
                 <p className="font-medium text-slate-900 dark:text-slate-100">{network.name}</p>
               </div>
             </div>
           </div>
-          {eoaAddress && (
+          {walletAddress && (
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Account</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Smart Account</p>
                   <p className="font-mono text-sm text-slate-900 dark:text-slate-100 truncate">
-                    {eoaAddress.slice(0, 6)}...{eoaAddress.slice(-4)}
+                    {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
                   </p>
                 </div>
               </div>

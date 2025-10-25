@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { useCopyToClipboard } from "~~/hooks/scaffold-eth";
 import { nostr, useNip07Ready } from "~~/services/connectNostrExtensionService";
@@ -8,15 +8,31 @@ import { connectService } from "~~/services/connectToNetworkService";
 import { useGlobalState } from "~~/services/store/store";
 
 export const NostrConnectButton = () => {
+  const [mounted, setMounted] = useState(false);
   const ready = useNip07Ready();
-  const [pubkeyHex, setPubkeyHex] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initializingAA, setInitializingAA] = useState(false);
   const { copyToClipboard, isCopiedToClipboard } = useCopyToClipboard();
 
-  // Get wallet address from global state to check if AA is initialized
+  // Get connection state from global state
   const walletAddress = useGlobalState(state => state.walletAddress);
+  const nPubkey = useGlobalState(state => state.nPubkey);
+
+  // Ensure component is mounted before showing dynamic content
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Initialize connection state on mount
+  useEffect(() => {
+    // If we have a pubkey in global state but no session in nostr service,
+    // try to restore the connection
+    if (nPubkey && !nostr.session) {
+      // The connection is already established in global state, no need to reconnect
+      return;
+    }
+  }, [nPubkey]);
 
   const handleConnectNostr = useCallback(async () => {
     if (!ready) {
@@ -26,9 +42,6 @@ export const NostrConnectButton = () => {
     setError(null);
     setConnecting(true);
     try {
-      const session = await nostr.connect();
-      setPubkeyHex(session.pubkey);
-
       // Initialize Account Abstraction after Nostr connection
       setInitializingAA(true);
       try {
@@ -142,13 +155,18 @@ export const NostrConnectButton = () => {
   );
 
   const npub = useMemo(() => {
-    if (!pubkeyHex) return null;
-    const bytes = hexToBytes(pubkeyHex);
+    // Use nPubkey from global state if available, otherwise try to derive from nostr session
+    if (nPubkey) return nPubkey;
+
+    const session = nostr.session;
+    if (!session?.pubkey) return null;
+
+    const bytes = hexToBytes(session.pubkey);
     if (!bytes || bytes.length !== 32) return null;
     const words = convertBits(Array.from(bytes), 8, 5, true);
     if (words.length === 0) return null;
     return bech32Encode("npub", words);
-  }, [pubkeyHex, hexToBytes, convertBits, bech32Encode]);
+  }, [nPubkey, hexToBytes, convertBits, bech32Encode]);
 
   const shortNpub = useMemo(() => {
     if (!npub) return null;
@@ -165,8 +183,22 @@ export const NostrConnectButton = () => {
     }
   }, [npub, copyToClipboard]);
 
-  const isConnected = !!pubkeyHex;
+  const isConnected = !!nPubkey || !!nostr.session;
   const isAAInitialized = !!walletAddress;
+
+  // Show loading state during SSR to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col items-end min-w-0">
+          <span className="badge badge-ghost">Loading...</span>
+        </div>
+        <button type="button" className="btn btn-sm btn-secondary" disabled={true}>
+          Loading...
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-3">

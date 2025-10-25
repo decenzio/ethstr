@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
 import { ChainSelect } from "~~/components/ChainSelect";
+import { ClientOnly } from "~~/components/ClientOnly";
 import { NostrConnectButton } from "~~/components/NostrConnectButton";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
@@ -105,7 +106,20 @@ export const Header = () => {
       </div>
       <div className="navbar-end grow mr-4">
         <ChainSelect />
-        <NostrConnectButton />
+        <ClientOnly
+          fallback={
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end min-w-0">
+                <span className="badge badge-ghost">Loading...</span>
+              </div>
+              <button type="button" className="btn btn-sm btn-secondary" disabled={true}>
+                Loading...
+              </button>
+            </div>
+          }
+        >
+          <NostrConnectButton />
+        </ClientOnly>
       </div>
     </div>
   );

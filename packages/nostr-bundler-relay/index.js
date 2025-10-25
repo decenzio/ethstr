@@ -8,12 +8,12 @@ useWebSocketImplementation(WebSocket);
 const { createPublicClient, http, keccak256, encodeAbiParameters, encodePacked, hashTypedData, domainSeparator,
     hashStruct
 } = require('viem');
-const { sepolia } = require('viem/chains');
+const { base } = require('viem/chains');
 const {entryPoint08Abi, entryPoint08Address} = require("viem/account-abstraction");
 
 const bundlerRpcUrl = 'https://api.pimlico.io/v2/8453/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC';
 const bundlerClient = createPublicClient({
-    chain: sepolia,
+    chain: base,
     transport: http(bundlerRpcUrl),
 });
 
@@ -135,14 +135,42 @@ async function subscribeToEvents() {
                     //     args: [opObject],
                     // });
 
-                    for(let key in parsedObj) {
-                        if(typeof(parsedObj[key])==="bigint") parsedObj[key] = "0x"+parsedObj[key].toString(16);
+                    // Clean the UserOperation object - use the correct format for Pimlico bundler
+                    const cleanUserOp = {
+                        sender: parsedObj.sender,
+                        nonce: parsedObj.nonce,
+                        callData: parsedObj.callData,
+                        callGasLimit: parsedObj.callGasLimit,
+                        verificationGasLimit: parsedObj.verificationGasLimit,
+                        preVerificationGas: parsedObj.preVerificationGas,
+                        maxFeePerGas: parsedObj.maxFeePerGas,
+                        maxPriorityFeePerGas: parsedObj.maxPriorityFeePerGas,
+                        signature: parsedObj.signature
+                    };
+
+                    // Add initCode and paymasterAndData only if they exist and are not empty
+                    if (parsedObj.initCode && parsedObj.initCode !== "0x") {
+                        cleanUserOp.initCode = parsedObj.initCode;
                     }
+                    if (parsedObj.paymasterAndData && parsedObj.paymasterAndData !== "0x") {
+                        cleanUserOp.paymasterAndData = parsedObj.paymasterAndData;
+                    }
+
+                    // Convert BigInt values to hex strings
+                    for(let key in cleanUserOp) {
+                        if(typeof(cleanUserOp[key])==="bigint") {
+                            cleanUserOp[key] = "0x"+cleanUserOp[key].toString(16);
+                        }
+                    }
+
+                    console.log("Cleaned UserOperation:", cleanUserOp);
+                    console.log("Nonce value:", cleanUserOp.nonce);
+                    console.log("Sender address:", cleanUserOp.sender);
 
                     const txHash = await bundlerClient.request({
                         method: 'eth_sendUserOperation',
                         params: [
-                            parsedObj, // UserOperation type object
+                            cleanUserOp, // Clean UserOperation object
                             "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108"
                         ],
                     });

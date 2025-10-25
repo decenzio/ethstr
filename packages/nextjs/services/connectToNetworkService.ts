@@ -28,13 +28,20 @@ export const connectService = {
     const targetNetwork = useGlobalState.getState().targetNetwork;
     const appChainConfig = getAppChainConfig(targetNetwork.id);
 
+    // Determine which transport to use for public client
+    // Priority: wsRpcUrl > rpcUrl > fallback pattern
+    const rpcTransport = appChainConfig.wsRpcUrl
+      ? webSocket(appChainConfig.wsRpcUrl)
+      : appChainConfig.rpcUrl
+        ? http(appChainConfig.rpcUrl)
+        : webSocket(
+            `wss://${targetNetwork.name.toLowerCase()}-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94`,
+          );
+
     // Create public client with the selected network
     const publicClient = createPublicClient({
       chain: targetNetwork,
-      transport: webSocket(
-        appChainConfig.bundlerUrl ||
-          `wss://${targetNetwork.name.toLowerCase()}-mainnet.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94`,
-      ),
+      transport: rpcTransport,
     });
 
     useGlobalState.getState().setPublicClient(publicClient);
@@ -47,13 +54,11 @@ export const connectService = {
 
     useGlobalState.getState().setEvmAccount(evmAccount);
 
+    // Create a proper bundler client using permissionless
     const bundlerClient = createSmartAccountClient({
       account: evmAccount,
       chain: targetNetwork,
-      bundlerTransport: http(
-        appChainConfig.bundlerUrl ||
-          `https://api.pimlico.io/v2/${targetNetwork.id}/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC`,
-      ),
+      bundlerTransport: http(appChainConfig.bundlerUrl),
     });
 
     useGlobalState.getState().setBundlerClient(bundlerClient);

@@ -1,8 +1,6 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
-
-
     You are an expert in Solidity and smart contract security.
 
     General Rules
