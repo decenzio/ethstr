@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { useTargetNetwork } from "./useTargetNetwork";
 import { useQueryClient } from "@tanstack/react-query";

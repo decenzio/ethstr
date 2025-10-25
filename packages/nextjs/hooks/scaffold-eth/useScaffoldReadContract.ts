@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { QueryObserverResult, RefetchOptions, useQueryClient } from "@tanstack/react-query";
 import type { ExtractAbiFunctionNames } from "abitype";

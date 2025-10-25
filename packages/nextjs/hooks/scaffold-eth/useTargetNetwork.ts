@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo } from "react";
 import { useAccount } from "wagmi";
 import scaffoldConfig from "~~/scaffold.config";
