@@ -14,16 +14,16 @@ import "./Secp256k1.sol";
  */
 library BIP340Util {
     // ============ Constants ============
-    
+
     /// @notice Precomputed SHA256 hash of "BIP0340/challenge" tag
     /// @dev Saves ~10k gas compared to computing SHA256 at runtime
     bytes32 private constant BIP340_CHALLENGE_TAG = 0x7bb52d7a9fef58323eb1bf7a407db382d2f3f2d81bb1224f49fe518f6d48d37c;
 
     // ============ Errors ============
-    
+
     /// @notice Thrown when attempting to lift an x-coordinate that is out of range
     error InvalidXCoordinate();
-    
+
     /// @notice Thrown when a point lifting operation fails
     error PointLiftingFailed();
 
@@ -37,11 +37,7 @@ library BIP340Util {
      * @param m The message hash being signed
      * @return The challenge value e (mod n)
      */
-    function computeChallenge(
-        bytes32 rx,
-        bytes32 px,
-        bytes32 m
-    ) internal pure returns (uint256) {
+    function computeChallenge(bytes32 rx, bytes32 px, bytes32 m) internal pure returns (uint256) {
         // Concatenate tag twice, then rx, px, and message
         // This follows BIP340 specification for challenge computation
         return uint256(sha256(abi.encodePacked(BIP340_CHALLENGE_TAG, BIP340_CHALLENGE_TAG, rx, px, m))) % Secp256k1.NN;
@@ -91,11 +87,7 @@ library BIP340Util {
      * @param pp The prime modulus
      * @return The x-coordinate in affine form
      */
-    function xToAffine(
-        uint256 x,
-        uint256 z,
-        uint256 pp
-    ) internal pure returns (uint256) {
+    function xToAffine(uint256 x, uint256 z, uint256 pp) internal pure returns (uint256) {
         uint256 zInv = EllipticCurve.invMod(z, pp);
         uint256 zInvSquared = mulmod(zInv, zInv, pp);
         return mulmod(x, zInvSquared, pp);
@@ -131,10 +123,10 @@ library BIP340Util {
  */
 library BIP340Ecrec {
     // ============ Errors ============
-    
+
     /// @notice Thrown when signature parameters are out of valid range
     error InvalidSignatureParameters();
-    
+
     /// @notice Thrown when public key conversion fails
     error PublicKeyConversionFailed();
 
@@ -152,25 +144,20 @@ library BIP340Ecrec {
      * @param m The message hash being verified
      * @return valid True if the signature is valid, false otherwise
      */
-    function verify(
-        uint256 px,
-        uint256 rx,
-        uint256 s,
-        bytes32 m
-    ) internal pure returns (bool valid) {
+    function verify(uint256 px, uint256 rx, uint256 s, bytes32 m) internal pure returns (bool valid) {
         // Validate input parameters are within valid ranges
         if (px >= Secp256k1.PP || rx >= Secp256k1.PP || s >= Secp256k1.NN) {
             return false;
         }
 
         // Convert the signature point R to a fake Ethereum address
-        (address expectedAddr, bool conversionSuccess) = Bip340Util.convToFakeAddr(rx);
+        (address expectedAddr, bool conversionSuccess) = BIP340Util.convToFakeAddr(rx);
         if (!conversionSuccess) {
             return false;
         }
 
         // Compute the BIP340 challenge
-        uint256 e = Bip340Util.computeChallenge(bytes32(rx), bytes32(px), m);
+        uint256 e = BIP340Util.computeChallenge(bytes32(rx), bytes32(px), m);
 
         // Prepare parameters for ecrecover
         // The mathematical transformation converts the Schnorr verification
