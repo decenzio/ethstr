@@ -34,7 +34,7 @@ const ExplorerPage: NextPage = () => {
     setResolvedAddress(null);
 
     try {
-      const address = await getEvmAddressFromNpub(value, { signal: controller.signal });
+      const address = await getEvmAddressFromNpub(value, targetNetwork.id, { signal: controller.signal });
       setResolvedAddress(address);
     } catch (err) {
       if ((err as Error)?.name === "AbortError") return;

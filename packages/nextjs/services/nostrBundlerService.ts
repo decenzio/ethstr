@@ -1,8 +1,9 @@
 import { SimplePool, finalizeEvent, generateSecretKey } from "nostr-tools";
+import { NOSTR_RELAYS } from "~~/config/appChains";
 import { stringifyWithBigInt } from "~~/utils/stringifyWithBigInt";
 
 const pool = new SimplePool();
-const relays = ["wss://relay.primal.net", "wss://nos.lol", "wss://relay.damus.io"];
+const relays = [...NOSTR_RELAYS]; // Use relays from config
 const sk = generateSecretKey();
 
 export const nostrBundlerService = {
