@@ -113,7 +113,7 @@ library BIP340Util {
     }
 }
 
-/**
+/*
  * @title BIP340 Schnorr Signature Verification
  * @notice Library for verifying BIP340 Schnorr signatures using the ecrecover optimization
  * @dev This library implements an efficient method to verify BIP340 Schnorr signatures
