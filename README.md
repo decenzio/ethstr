@@ -1,88 +1,53 @@
-# 🏗 Scaffold-ETH 2
+# ethstr
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+A monorepo containing Ethereum smart contracts (Hardhat) and a Next.js frontend plus a Nostr bundler/relay component. This project collects tooling and example apps used during development and testing.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+About this project
+ethstr2 demonstrates identity-first account abstraction by integrating the Nostr protocol with ERC-4337 smart accounts. Users can control on-chain smart accounts using Nostr keys (npub) via a Next.js UI, while a Bundler/Relay component helps package and relay transactions. Built as a compact ETHGlobal submission showcasing Nostr-based authentication for Ethereum.
 
-⚙️ Built using NextJS, RainbowKit, Foundry/Hardhat, Wagmi, Viem, and Typescript.
+Quick and simple instructions
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+Prerequisites
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+- Node.js (LTS, e.g. v18+)
 
-## Requirements
+Package manager
 
-Before you begin, you need to install the following tools:
+- This repo is set up to use Yarn. There's a `yarn.lock` at the repo root and the root `package.json` declares `packageManager: "yarn"`.
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+Install dependencies (preferred)
 
-## Quickstart
+Run these from the repository root:
 
-To get started with Scaffold-ETH 2, follow the steps below:
-
-1. Install the latest version of Scaffold-ETH 2
-
-```
-npx create-eth@latest
+```bash
+yarn install
 ```
 
-This command will install all the necessary packages and dependencies, so it might take a while.
+Install per-package (if needed):
 
-> [!NOTE]
-> You can also initialize your project with one of our extensions to add specific features or starter-kits. Learn more in our [extensions documentation](https://docs.scaffoldeth.io/extensions/).
-
-2. Run a local network in the first terminal:
-
-```
-yarn chain
+```bash
+cd packages/hardhat && yarn install
+cd ../nextjs && yarn install
 ```
 
-This command starts a local Ethereum network that runs on your local machine and can be used for testing and development. Learn how to [customize your network configuration](https://docs.scaffoldeth.io/quick-start/environment#1-initialize-a-local-blockchain).
+Common tasks
 
-3. On a second terminal, deploy the test contract:
+- Compile & test contracts (Hardhat):
 
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. You can find more information about how to customize your contract and deployment script in our [documentation](https://docs.scaffoldeth.io/quick-start/environment#2-deploy-your-smart-contract).
-
-4. On a third terminal, start your NextJS app:
-
-```
-yarn start
+```bash
+cd packages/hardhat
+npx hardhat compile
+npx hardhat test
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+-- Run the frontend locally:
 
-**What's next**:
+```bash
+cd packages/nextjs
+yarn dev
+```
 
-Visit the [What's next section of our docs](https://docs.scaffoldeth.io/quick-start/environment#whats-next) to learn how to:
+Notes
 
-- Edit your smart contracts
-- Edit your deployment scripts
-- Customize your frontend
-- Edit the app config
-- Writing and running tests
-- [Setting up external services and API keys](https://docs.scaffoldeth.io/deploying/deploy-smart-contracts#configuration-of-third-party-services-for-production-grade-apps)
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn all the technical details and guides of Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+- See `packages/hardhat` and `packages/nextjs` for package-specific scripts and configuration.
+- Note: `packages/nostr-bundler-relay` contains a `package-lock.json` (created by an `npm install` at some point). The canonical project setup uses Yarn — you can safely remove that `package-lock.json` if you want to avoid confusion.
