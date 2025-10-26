@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import hre from "hardhat";
 import { HexStringsTest } from "../typechain-types";
 
 describe("HexStrings Library", function () {
@@ -24,7 +25,7 @@ describe("HexStrings Library", function () {
     });
 
     it("Should convert larger numbers correctly", async function () {
-      const result = await hexStringsTest.toHexString(0x1234567890abcdef);
+      const result = await hexStringsTest.toHexString(0x1234567890abcdefn as unknown as number);
       expect(result).to.equal("0000000000000000000000000000000000000000000000001234567890abcdef");
       expect(result.length).to.equal(64);
     });
@@ -43,7 +44,7 @@ describe("HexStrings Library", function () {
         0xff,
         0xffff,
         0xffffffff,
-        0x1234567890abcdef,
+        "0x1234567890abcdef",
         "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
       ];
 
@@ -72,7 +73,7 @@ describe("HexStrings Library", function () {
     });
 
     it("Should convert larger numbers without leading zeros", async function () {
-      const result = await hexStringsTest.toHexStringNoPrefix(0x1234567890abcdef);
+      const result = await hexStringsTest.toHexStringNoPrefix(0x1234567890abcdefn as unknown as number);
       expect(result).to.equal("1234567890abcdef");
     });
 
@@ -86,7 +87,7 @@ describe("HexStrings Library", function () {
     it("Should not include leading zeros", async function () {
       const result = await hexStringsTest.toHexStringNoPrefix(0x123);
       expect(result).to.equal("123");
-      expect(result).to.not.startWith("0");
+      expect(result.startsWith("0")).to.equal(false);
     });
 
     it("Should use lowercase hex characters", async function () {
@@ -108,7 +109,7 @@ describe("HexStrings Library", function () {
     });
 
     it("Should convert larger numbers with 0x prefix", async function () {
-      const result = await hexStringsTest.toHexStringWithPrefix(0x1234567890abcdef);
+      const result = await hexStringsTest.toHexStringWithPrefix(0x1234567890abcdefn as unknown as number);
       expect(result).to.equal("0x1234567890abcdef");
     });
 
@@ -116,16 +117,16 @@ describe("HexStrings Library", function () {
       const maxUint256 = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
       const result = await hexStringsTest.toHexStringWithPrefix(maxUint256);
       expect(result).to.equal("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-      expect(result).to.startWith("0x");
+      expect(result.startsWith("0x")).to.equal(true);
       expect(result.length).to.equal(66); // 0x + 64 characters
     });
 
     it("Should always start with 0x", async function () {
-      const testValues = [0, 1, 0xff, 0xffff, 0x1234567890abcdef];
+      const testValues = [0, 1, 0xff, 0xffff, "0x1234567890abcdef"];
 
       for (const value of testValues) {
-        const result = await hexStringsTest.toHexStringWithPrefix(value);
-        expect(result).to.startWith("0x");
+        const result = await hexStringsTest.toHexStringWithPrefix(value as any);
+        expect(result.startsWith("0x")).to.equal(true);
       }
     });
 
@@ -151,23 +152,23 @@ describe("HexStrings Library", function () {
       for (const value of boundaryValues) {
         const hexString = await hexStringsTest.toHexString(value);
         const hexStringNoPrefix = await hexStringsTest.toHexStringNoPrefix(value);
-        const hexStringWithPrefix = await hexStringsTest.toHexStringWithPrefix(value);
+        const hexStringWithPrefix = await hexStringsTest.toHexStringWithPrefix(value as any);
 
         expect(hexString.length).to.equal(64);
         expect(hexStringNoPrefix.length).to.be.greaterThan(0);
-        expect(hexStringWithPrefix).to.startWith("0x");
+        expect(hexStringWithPrefix.startsWith("0x")).to.equal(true);
       }
     });
 
     it("Should be consistent across different functions", async function () {
-      const value = 0x1234567890abcdef;
+      const value = "0x1234567890abcdef";
 
       const hexString = await hexStringsTest.toHexString(value);
       const hexStringNoPrefix = await hexStringsTest.toHexStringNoPrefix(value);
       const hexStringWithPrefix = await hexStringsTest.toHexStringWithPrefix(value);
 
       // The no-prefix version should be the suffix of the full version
-      expect(hexString).to.endWith(hexStringNoPrefix);
+      expect(hexString.endsWith(hexStringNoPrefix)).to.equal(true);
 
       // The with-prefix version should be 0x + no-prefix version
       expect(hexStringWithPrefix).to.equal("0x" + hexStringNoPrefix);

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import hre from "hardhat";
 import { NostrSignaturesTest } from "../typechain-types";
 
 describe("NostrSignatures Library", function () {
@@ -14,8 +14,8 @@ describe("NostrSignatures Library", function () {
   describe("verifyNostrSignature", function () {
     it("Should revert with InvalidSignatureLength for wrong signature length", async function () {
       const owner = "0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798";
-      const signature = ethers.hexlify(ethers.randomBytes(32)); // 32 bytes instead of 64
-      const userOpHash = ethers.hexlify(ethers.randomBytes(32));
+      const signature = hre.ethers.hexlify(hre.ethers.randomBytes(32)); // 32 bytes instead of 64
+      const userOpHash = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
       await expect(
         nostrSignaturesTest.verifyNostrSignature(owner, signature, userOpHash),
@@ -24,8 +24,8 @@ describe("NostrSignatures Library", function () {
 
     it("Should revert with InvalidOwnerAddress for zero owner", async function () {
       const owner = "0x0";
-      const signature = ethers.hexlify(ethers.randomBytes(64)); // 64 bytes
-      const userOpHash = ethers.hexlify(ethers.randomBytes(32));
+      const signature = hre.ethers.hexlify(hre.ethers.randomBytes(64)); // 64 bytes
+      const userOpHash = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
       await expect(
         nostrSignaturesTest.verifyNostrSignature(owner, signature, userOpHash),
@@ -37,6 +37,9 @@ describe("NostrSignatures Library", function () {
       const signature = hre.ethers.hexlify(hre.ethers.randomBytes(64)); // Random signature
       const userOpHash = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
+      // tryVerify returns false on failure; verify reverts
+      const tryResult = await nostrSignaturesTest.tryVerifyNostrSignature(owner, signature, userOpHash);
+      expect(tryResult).to.equal(false);
       await expect(
         nostrSignaturesTest.verifyNostrSignature(owner, signature, userOpHash),
       ).to.be.revertedWithCustomError(nostrSignaturesTest, "SignatureVerificationFailed");
@@ -59,20 +62,20 @@ describe("NostrSignatures Library", function () {
   describe("tryVerifyNostrSignature", function () {
     it("Should return false for wrong signature length", async function () {
       const owner = "0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798";
-      const signature = ethers.hexlify(ethers.randomBytes(32)); // 32 bytes instead of 64
-      const userOpHash = ethers.hexlify(ethers.randomBytes(32));
+      const signature = hre.ethers.hexlify(hre.ethers.randomBytes(32)); // 32 bytes instead of 64
+      const userOpHash = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
       const result = await nostrSignaturesTest.tryVerifyNostrSignature(owner, signature, userOpHash);
-      expect(result).to.be.false;
+      expect(result).to.equal(false);
     });
 
     it("Should return false for zero owner", async function () {
       const owner = "0x0";
-      const signature = ethers.hexlify(ethers.randomBytes(64)); // 64 bytes
-      const userOpHash = ethers.hexlify(ethers.randomBytes(32));
+      const signature = hre.ethers.hexlify(hre.ethers.randomBytes(64)); // 64 bytes
+      const userOpHash = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
       const result = await nostrSignaturesTest.tryVerifyNostrSignature(owner, signature, userOpHash);
-      expect(result).to.be.false;
+      expect(result).to.equal(false);
     });
 
     it("Should return false for invalid signature", async function () {
@@ -81,7 +84,7 @@ describe("NostrSignatures Library", function () {
       const userOpHash = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
       const result = await nostrSignaturesTest.tryVerifyNostrSignature(owner, signature, userOpHash);
-      expect(result).to.be.false;
+      expect(result).to.equal(false);
     });
 
     it("Should handle edge cases gracefully", async function () {
@@ -91,7 +94,7 @@ describe("NostrSignatures Library", function () {
       const userOpHash = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
       const result = await nostrSignaturesTest.tryVerifyNostrSignature(owner, signature, userOpHash);
-      expect(result).to.be.false; // Should fail with random signature
+      expect(result).to.equal(false); // Should fail with random signature
     });
 
     it("Should construct Nostr event message correctly", async function () {
@@ -104,7 +107,7 @@ describe("NostrSignatures Library", function () {
 
       // Should not revert during message construction
       const result = await nostrSignaturesTest.tryVerifyNostrSignature(owner, signature, userOpHash);
-      expect(result).to.be.a("boolean");
+      expect(typeof result).to.equal("boolean");
     });
   });
 
@@ -152,10 +155,8 @@ describe("NostrSignatures Library", function () {
       const signature = hre.ethers.hexlify(hre.ethers.randomBytes(64));
       const userOpHash = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
-      const tx = await nostrSignaturesTest.tryVerifyNostrSignature(owner, signature, userOpHash);
-
-      // The transaction should complete without running out of gas
-      expect(tx).to.be.a("boolean");
+      const result = await nostrSignaturesTest.tryVerifyNostrSignature(owner, signature, userOpHash);
+      expect(typeof result).to.equal("boolean");
     });
   });
 });

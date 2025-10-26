@@ -1,21 +1,21 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import hre from "hardhat";
 import { BIP340UtilTest } from "../typechain-types";
 
 describe("BIP340Util Library", function () {
   let bip340UtilTest: BIP340UtilTest;
 
   before(async () => {
-    const BIP340UtilTestFactory = await ethers.getContractFactory("BIP340UtilTest");
+    const BIP340UtilTestFactory = await hre.ethers.getContractFactory("BIP340UtilTest");
     bip340UtilTest = (await BIP340UtilTestFactory.deploy()) as BIP340UtilTest;
     await bip340UtilTest.waitForDeployment();
   });
 
   describe("computeChallenge", function () {
     it("Should compute challenge hash correctly", async function () {
-      const rx = ethers.hexlify(ethers.randomBytes(32));
-      const px = ethers.hexlify(ethers.randomBytes(32));
-      const m = ethers.hexlify(ethers.randomBytes(32));
+      const rx = hre.ethers.hexlify(hre.ethers.randomBytes(32));
+      const px = hre.ethers.hexlify(hre.ethers.randomBytes(32));
+      const m = hre.ethers.hexlify(hre.ethers.randomBytes(32));
 
       const challenge = await bip340UtilTest.computeChallenge(rx, px, m);
 
@@ -71,9 +71,32 @@ describe("BIP340Util Library", function () {
     });
 
     it("Should fail for x-coordinate that doesn't have valid y", async function () {
-      // Use x-coordinate that doesn't correspond to a point on the curve
-      const x = "0x0000000000000000000000000000000000000000000000000000000000000001";
+      // Find a small x that yields a non-residue for y^2 = x^3 + 7 (mod p)
+      const P = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2fn;
 
+      const modPow = (base: bigint, exp: bigint, mod: bigint): bigint => {
+        let result = 1n;
+        let b = base % mod;
+        let e = exp;
+        while (e > 0n) {
+          if ((e & 1n) === 1n) result = (result * b) % mod;
+          b = (b * b) % mod;
+          e >>= 1n;
+        }
+        return result;
+      };
+
+      const isResidue = (a: bigint): boolean => modPow(a % P, (P - 1n) / 2n, P) === 1n;
+
+      let xCandidate = 2n;
+      // search a few candidates deterministically
+      for (let i = 0; i < 128; i++) {
+        const rhs = (((xCandidate * xCandidate) % P) * xCandidate + 7n) % P;
+        if (!isResidue(rhs)) break;
+        xCandidate++;
+      }
+
+      const x = `0x${xCandidate.toString(16).padStart(64, "0")}`;
       const result = await bip340UtilTest.liftX(x);
 
       void expect(result.success).to.be.false;
