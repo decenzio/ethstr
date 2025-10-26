@@ -1,9 +1,0 @@
-{
-  "sepolia": {
-    "chainId": "11155111",
-    "NpubAccountFactory": "0xbFa5A21ADaA24746194547f44d44fd333729c662",
-    "NpubAccountImplementation": "0x580388FdF4BF9148967364220178545a6e231745",
-    "EntryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
-    "deployedAt": "2025-10-20T17:23:55.841Z"
-  }
-}

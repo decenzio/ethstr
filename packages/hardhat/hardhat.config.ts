@@ -1,33 +1,33 @@
-import type { HardhatUserConfig } from "hardhat/config";
-import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
-import dotenv from "dotenv";
-
-// Load environment variables from .env file
+import * as dotenv from "dotenv";
 dotenv.config();
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-chai-matchers";
+import "@typechain/hardhat";
+import "hardhat-gas-reporter";
+import "solidity-coverage";
+import "@nomicfoundation/hardhat-verify";
+import "hardhat-deploy";
+import "hardhat-deploy-ethers";
+import { task } from "hardhat/config";
+import generateTsAbis from "./scripts/generateTsAbis";
 
-// Helper function to ensure private key has 0x prefix
-const getPrivateKey = (): string[] => {
-  const key = process.env.DEPLOYER_PRIVATE_KEY;
-  if (!key) return [];
-  return [key.startsWith("0x") ? key : `0x${key}`];
-};
+// If not set, it uses the hardhat account 0 private key.
+// You can generate a random account with `yarn generate` or `yarn account:import` to import your existing PK
+const deployerPrivateKey =
+  process.env.__RUNTIME_DEPLOYER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+// If not set, it uses our block explorers default API keys.
+const etherscanApiKey = process.env.ETHERSCAN_V2_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
+
+// If not set, it uses ours Alchemy's default API key.
+// You can get your own at https://dashboard.alchemyapi.io
+const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatToolboxMochaEthers],
-
   solidity: {
     compilers: [
       {
-        version: "0.8.28",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200,
-          },
-        },
-      },
-      {
-        version: "0.8.23",
+        version: "0.8.20",
         settings: {
           optimizer: {
             enabled: true,
@@ -38,173 +38,116 @@ const config: HardhatUserConfig = {
       },
     ],
   },
-
+  defaultNetwork: "localhost",
+  namedAccounts: {
+    deployer: {
+      // By default, it will take the first Hardhat account as the deployer
+      default: 0,
+    },
+  },
   networks: {
-    // Local development network
+    // View the networks that are pre-configured.
+    // If the network you are looking for is not here you can add new network settings
     hardhat: {
-      type: "edr-simulated",
-      chainType: "l1",
       forking: {
-        url: process.env.ALCHEMY_API_KEY
-          ? `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-          : "https://eth-mainnet.g.alchemy.com/v2/demo",
+        url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
         enabled: process.env.MAINNET_FORKING_ENABLED === "true",
       },
     },
-
-    // Ethereum Mainnet & Testnet
     mainnet: {
-      type: "http",
-      chainType: "l1",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://eth-mainnet.g.alchemy.com/v2/demo",
-      accounts: getPrivateKey(),
+      url: "https://mainnet.rpc.buidlguidl.com",
+      accounts: [deployerPrivateKey],
     },
     sepolia: {
-      type: "http",
-      chainType: "l1",
-      url: "https://ethereum-sepolia-rpc.publicnode.com",
-      accounts: getPrivateKey(),
+      url: `https://eth-sepolia.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
-
-    // Arbitrum
     arbitrum: {
-      type: "http",
-      chainType: "generic",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://arb1.arbitrum.io/rpc",
-      accounts: getPrivateKey(),
+      url: `https://arb-mainnet.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
     arbitrumSepolia: {
-      type: "http",
-      chainType: "generic",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://sepolia-rollup.arbitrum.io/rpc",
-      accounts: getPrivateKey(),
+      url: `https://arb-sepolia.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
-
-    // Optimism
     optimism: {
-      type: "http",
-      chainType: "op",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://opt-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://mainnet.optimism.io",
-      accounts: getPrivateKey(),
+      url: `https://opt-mainnet.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
     optimismSepolia: {
-      type: "http",
-      chainType: "op",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://opt-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://sepolia.optimism.io",
-      accounts: getPrivateKey(),
+      url: `https://opt-sepolia.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
-
-    // Base
-    base: {
-      type: "http",
-      chainType: "op",
-      url: "https://mainnet.base.org",
-      accounts: getPrivateKey(),
-    },
-    baseSepolia: {
-      type: "http",
-      chainType: "op",
-      url: "https://sepolia.base.org",
-      accounts: getPrivateKey(),
-    },
-
-    // Polygon
     polygon: {
-      type: "http",
-      chainType: "generic",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://polygon-rpc.com",
-      accounts: getPrivateKey(),
+      url: `https://polygon-mainnet.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
     polygonAmoy: {
-      type: "http",
-      chainType: "generic",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://polygon-amoy.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://rpc-amoy.polygon.technology",
-      accounts: getPrivateKey(),
+      url: `https://polygon-amoy.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
-
-    // Polygon ZK EVM
     polygonZkEvm: {
-      type: "http",
-      chainType: "generic",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://polygonzkevm-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://zkevm-rpc.com",
-      accounts: getPrivateKey(),
+      url: `https://polygonzkevm-mainnet.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
     polygonZkEvmCardona: {
-      type: "http",
-      chainType: "generic",
-      url: process.env.ALCHEMY_API_KEY
-        ? `https://polygonzkevm-cardona.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-        : "https://rpc.cardona.zkevm-rpc.com",
-      accounts: getPrivateKey(),
+      url: `https://polygonzkevm-cardona.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
     },
-
-    // Other Networks
     gnosis: {
-      type: "http",
-      chainType: "generic",
       url: "https://rpc.gnosischain.com",
-      accounts: getPrivateKey(),
+      accounts: [deployerPrivateKey],
     },
     chiado: {
-      type: "http",
-      chainType: "generic",
       url: "https://rpc.chiadochain.net",
-      accounts: getPrivateKey(),
+      accounts: [deployerPrivateKey],
     },
-    zircuit: {
-      type: "http",
-      chainType: "generic",
-      url: "https://zircuit1-testnet.p2pify.com",
-      accounts: getPrivateKey(),
+    base: {
+      url: "https://mainnet.base.org",
+      accounts: [deployerPrivateKey],
     },
-    scroll: {
-      type: "http",
-      chainType: "generic",
-      url: "https://rpc.scroll.io",
-      accounts: getPrivateKey(),
+    baseSepolia: {
+      url: "https://sepolia.base.org",
+      accounts: [deployerPrivateKey],
     },
     scrollSepolia: {
-      type: "http",
-      chainType: "generic",
       url: "https://sepolia-rpc.scroll.io",
-      accounts: getPrivateKey(),
+      accounts: [deployerPrivateKey],
+    },
+    scroll: {
+      url: "https://rpc.scroll.io",
+      accounts: [deployerPrivateKey],
     },
     celo: {
-      type: "http",
-      chainType: "generic",
       url: "https://forno.celo.org",
-      accounts: getPrivateKey(),
+      accounts: [deployerPrivateKey],
     },
     celoSepolia: {
-      type: "http",
-      chainType: "generic",
-      url: "https://forno.celo-sepolia.celo-testnet.org",
-      accounts: getPrivateKey(),
+      url: "https://forno.celo-sepolia.celo-testnet.org/",
+      accounts: [deployerPrivateKey],
     },
   },
-
-  // Contract verification configuration
+  // Configuration for harhdat-verify plugin
+  etherscan: {
+    apiKey: `${etherscanApiKey}`,
+  },
+  // Configuration for etherscan-verify from hardhat-deploy plugin
   verify: {
     etherscan: {
-      apiKey: process.env.ETHERSCAN_API_KEY || "",
+      apiKey: `${etherscanApiKey}`,
     },
   },
+  sourcify: {
+    enabled: false,
+  },
 };
+
+// Extend the deploy task
+task("deploy").setAction(async (args, hre, runSuper) => {
+  // Run the original deploy task
+  await runSuper(args);
+  // Force run the generateTsAbis script
+  await generateTsAbis(hre);
+});
 
 export default config;
