@@ -98,6 +98,15 @@ export const getAccountNonce = async (client: Client, args: GetAccountNonceParam
 const getAccountInitCode = async (owner: string, index = BigInt(0)): Promise<Hex> => {
   if (!owner) throw new Error("Owner account not found");
 
+  // Convert hex string to BigInt properly
+  const ownerBigInt = BigInt(owner);
+
+  console.log("getAccountInitCode debug:", {
+    owner,
+    ownerBigInt: ownerBigInt.toString(),
+    index: index.toString(),
+  });
+
   return encodeFunctionData({
     abi: [
       {
@@ -116,7 +125,7 @@ const getAccountInitCode = async (owner: string, index = BigInt(0)): Promise<Hex
         name: "createAccount",
         outputs: [
           {
-            internalType: "contract NostrAccount",
+            internalType: "contract NpubAccount",
             name: "ret",
             type: "address",
           },
@@ -126,7 +135,7 @@ const getAccountInitCode = async (owner: string, index = BigInt(0)): Promise<Hex
       },
     ],
     functionName: "createAccount",
-    args: [BigInt(owner), index],
+    args: [ownerBigInt, index],
   });
 };
 

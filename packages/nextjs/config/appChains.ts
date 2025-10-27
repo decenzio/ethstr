@@ -42,7 +42,15 @@ export const APP_CHAIN_CONFIG: Record<number, AppChainConfig> = {
     relayerUrl: "",
     blockExplorerUrl: "https://basescan.org",
   },
-  // TODO: Add Zircuit Garfield when chain object/details available
+  [chains.arbitrum.id]: {
+    bundlerUrl: "https://api.pimlico.io/v2/42161/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC",
+    rpcUrl: "https://arbitrum-one.public.blastapi.io/",
+    wsRpcUrl: "wss://arbitrum-one.blastapi.io/5648ecee-3f48-4b1f-b060-824a76b34d94",
+    entryPointAddress: "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+    factoryAddress: "0xF1810bD15522EA0E005a94239868Ae5b7B6Cb377",
+    relayerUrl: "",
+    blockExplorerUrl: "https://arbiscan.io/",
+  },
 };
 
 export const getAppChainConfig = (chainId: number): AppChainConfig => {

@@ -8,12 +8,12 @@ useWebSocketImplementation(WebSocket);
 const { createPublicClient, http, keccak256, encodeAbiParameters, encodePacked, hashTypedData, domainSeparator,
     hashStruct
 } = require('viem');
-const { base } = require('viem/chains');
+const { arbitrum } = require('viem/chains');
 const {entryPoint08Abi, entryPoint08Address} = require("viem/account-abstraction");
 
-const bundlerRpcUrl = 'https://api.pimlico.io/v2/8453/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC';
+const bundlerRpcUrl = 'https://api.pimlico.io/v2/42161/rpc?apikey=pim_X5CHVGtEhbJLu7Wj4H8fDC';
 const bundlerClient = createPublicClient({
-    chain: base,
+    chain: arbitrum,
     transport: http(bundlerRpcUrl),
 });
 
@@ -25,7 +25,7 @@ const relays = ["wss://relay.primal.net", "wss://nos.lol", "wss://relay.damus.io
 let sk = generateSecretKey()
 let pk = getPublicKey(sk)
 
-const chainId = 8453n;
+const chainId = 42161n;
 
 function parseWithBigInt(json) {
     return JSON.parse(json, (_, value) =>
@@ -171,7 +171,7 @@ async function subscribeToEvents() {
                         method: 'eth_sendUserOperation',
                         params: [
                             cleanUserOp, // Clean UserOperation object
-                            "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108"
+                            "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
                         ],
                     });
 

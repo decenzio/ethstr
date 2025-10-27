@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address } from "viem";
+import { PYUSDBalance } from "~~/components/PYUSDBalance";
+import { PYUSDTransfer } from "~~/components/PYUSDTransfer";
 import { AddressInput, EtherInput } from "~~/components/scaffold-eth";
 import { useSelectedNetwork } from "~~/hooks/scaffold-eth/useSelectedNetwork";
 import { connectService } from "~~/services/connectToNetworkService";
 import { transactionService } from "~~/services/sendTransactionService";
 import { useGlobalState } from "~~/services/store/store";
+import { tokenService } from "~~/services/tokenService";
 import { getBlockExplorerTxLink } from "~~/utils/scaffold-eth";
 
 const WalletPage = () => {
@@ -17,8 +20,10 @@ const WalletPage = () => {
   const [amountEth, setAmountEth] = useState<string>("");
   const [txHash, setTxHash] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [usdcTxHash, setUsdcTxHash] = useState<string | null>(null);
 
   const isAAInitialized = transactionService.isNetworkSupported();
+  const isPYUSDSupported = tokenService.isPYUSDSupported();
 
   // Restore connection if we have nPubkey but no AA initialization
   useEffect(() => {
@@ -44,7 +49,20 @@ const WalletPage = () => {
     }
   }, [to, amountEth]);
 
+  const handlePYUSDTransferComplete = useCallback((txHash: string) => {
+    setUsdcTxHash(txHash);
+  }, []);
+
+  const handlePYUSDTransferError = useCallback((error: string) => {
+    console.error("PYUSD transfer error:", error);
+    alert(error);
+  }, []);
+
   const explorerLink = useMemo(() => (txHash ? getBlockExplorerTxLink(network.id, txHash) : ""), [txHash, network.id]);
+  const usdcExplorerLink = useMemo(
+    () => (usdcTxHash ? getBlockExplorerTxLink(network.id, usdcTxHash) : ""),
+    [usdcTxHash, network.id],
+  );
   const isDisabled = useMemo(
     () => !isAAInitialized || sending || !to || !amountEth,
     [isAAInitialized, sending, to, amountEth],
@@ -102,7 +120,7 @@ const WalletPage = () => {
         )}
 
         {/* Network Status Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
             <div className="flex items-center gap-3">
               <div className={`w-3 h-3 rounded-full ${isAAInitialized ? "bg-green-500" : "bg-yellow-500"}`}></div>
@@ -121,6 +139,17 @@ const WalletPage = () => {
                   <p className="font-mono text-sm text-slate-900 dark:text-slate-100 truncate">
                     {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {isPYUSDSupported && walletAddress && (
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">PYUSD Balance</p>
+                  <PYUSDBalance showLabel={false} className="text-sm font-medium" />
                 </div>
               </div>
             </div>
@@ -237,6 +266,53 @@ const WalletPage = () => {
             </div>
           </div>
         </div>
+
+        {/* PYUSD Transfer Section */}
+        {isPYUSDSupported && walletAddress && (
+          <div className="mt-8">
+            <PYUSDTransfer
+              onTransferComplete={handlePYUSDTransferComplete}
+              onTransferError={handlePYUSDTransferError}
+              className="max-w-md mx-auto"
+            />
+
+            {/* PYUSD Transaction Success Alert */}
+            {usdcTxHash && (
+              <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg max-w-md mx-auto">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-green-800 dark:text-green-200">
+                      PYUSD Transfer Successful
+                    </h3>
+                    <p className="mt-1 text-sm text-green-700 dark:text-green-300">
+                      {usdcExplorerLink ? (
+                        <a
+                          className="font-mono hover:underline focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
+                          href={usdcExplorerLink}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {usdcTxHash.slice(0, 10)}...{usdcTxHash.slice(-8)}
+                        </a>
+                      ) : (
+                        <span className="font-mono">{usdcTxHash}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
